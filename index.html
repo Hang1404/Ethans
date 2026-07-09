@@ -7,29 +7,42 @@
   <style>
     :root {
       --bg: #f6efe4;
-      --panel: #fffdf8;
-      --panel-strong: #fdf0d8;
+      --panel: rgba(255, 253, 248, 0.6);
+      --panel-strong: rgba(253, 240, 216, 0.75);
       --ink: #2f241c;
       --muted: #7b6a58;
       --accent: #b96c2f;
       --accent-2: #d9883d;
       --success: #4b7c41;
       --warning: #c9463c;
-      --line: #e7dccf;
-      --shadow: 0 10px 24px rgba(47, 36, 28, 0.08);
+      --line: rgba(231, 220, 207, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.55);
+      --shadow: 0 10px 30px rgba(47, 36, 28, 0.08);
+      --shadow-hover: 0 18px 40px rgba(47, 36, 28, 0.16);
       --radius: 18px;
+      --ease: cubic-bezier(.25, .8, .35, 1);
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--ink);
-      background: linear-gradient(135deg, #fcf4e8 0%, var(--bg) 100%);
+      background: radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 45%),
+                  radial-gradient(circle at 85% 0%, #ffe9d1 0%, transparent 40%),
+                  linear-gradient(135deg, #fcf4e8 0%, var(--bg) 60%, #f3e6d4 100%);
+      background-attachment: fixed;
       min-height: 100vh;
     }
     img { max-width: 100%; display: block; }
     button, input, select, textarea { font: inherit; }
+
+    ::selection { background: rgba(185,108,47,.25); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(185,108,47,.28); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(185,108,47,.45); background-clip: padding-box; }
 
     .app {
       display: grid;
@@ -38,49 +51,69 @@
     }
 
     .sidebar {
-      background: #2d2017;
+      background: linear-gradient(180deg, rgba(45,32,23,0.82), rgba(35,25,18,0.88));
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
       color: #fff7ee;
       padding: 24px 18px;
       display: flex;
       flex-direction: column;
       gap: 18px;
+      border-right: 1px solid rgba(255,255,255,0.08);
     }
     .brand { display: flex; flex-direction: column; gap: 8px; }
     .brand h1 { font-size: 20px; margin: 0; }
     .brand p { margin: 0; color: rgba(255,247,238,0.78); font-size: 13px; }
     .nav-btn {
-      background: transparent; border: 0; color: inherit; text-align: left; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px; transition: background .2s ease;
+      background: transparent; border: 0; color: inherit; text-align: left; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px;
+      transition: background .3s var(--ease), transform .3s var(--ease), box-shadow .3s var(--ease);
+      position: relative;
     }
-    .nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,0.12); }
+    .nav-btn:hover { background: rgba(255,255,255,0.1); transform: translateX(3px); }
+    .nav-btn.active { background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); transform: translateX(3px); }
 
     .main { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
-      padding: 14px 18px; background: rgba(255,253,248,0.8); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+      padding: 14px 18px; background: rgba(255,253,248,0.55); backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%); border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: var(--shadow);
+      transition: box-shadow .3s var(--ease);
     }
     .topbar h2 { margin: 0; font-size: 18px; }
     .topbar .meta { color: var(--muted); font-size: 13px; }
     .mobile-toggle { display: none; }
 
     .panel {
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+      background: var(--panel); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+      transition: transform .35s var(--ease), box-shadow .35s var(--ease);
     }
+    .panel:hover { box-shadow: var(--shadow-hover); }
     .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .section-title h3 { margin: 0; font-size: 17px; }
     .section-title p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
     .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--panel-strong); color: var(--accent); font-size: 12px; font-weight: 700; }
     .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-    .stat-card { background: linear-gradient(145deg, #fff7ea, #f8e6c3); border: 1px solid #edd8b7; border-radius: 16px; padding: 16px; }
+    .stat-card {
+      background: linear-gradient(145deg, rgba(255,247,234,0.75), rgba(248,230,195,0.6));
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(237,216,183,0.6); border-radius: 16px; padding: 16px;
+      transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
     .stat-card .label { color: var(--muted); font-size: 13px; }
     .stat-card .value { font-size: 24px; font-weight: 800; margin-top: 6px; }
     .stat-card small { display: block; margin-top: 6px; color: var(--muted); }
 
     .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; }
     .list { display: flex; flex-direction: column; gap: 10px; }
-    .item-card { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: #fff; }
+    .item-card {
+      border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px 14px; background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
+    }
+    .item-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); background: rgba(255,255,255,0.72); }
     .list-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
     .muted { color: var(--muted); font-size: 13px; }
-    .tag { padding: 5px 8px; border-radius: 999px; background: #f5e9da; color: var(--accent); font-size: 12px; font-weight: 700; }
+    .tag { padding: 5px 8px; border-radius: 999px; background: rgba(245,233,218,0.85); color: var(--accent); font-size: 12px; font-weight: 700; transition: background .25s var(--ease); }
     .danger { color: var(--warning); }
     .ok { color: var(--success); }
 
@@ -89,48 +122,108 @@
     .form-group.full { grid-column: 1 / -1; }
     label { font-size: 13px; color: var(--muted); }
     input, select, textarea {
-      border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 10px 12px; border-radius: 12px; outline: none;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.6); backdrop-filter: blur(6px); color: var(--ink); padding: 10px 12px; border-radius: 12px; outline: none;
+      transition: border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
     }
     textarea { min-height: 90px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(217,136,61,0.15); }
+    input:hover, select:hover, textarea:hover { background: rgba(255,255,255,0.8); }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(217,136,61,0.15); background: rgba(255,255,255,0.92); }
     .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
     button.btn, .btn-link {
-      border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; font-weight: 700;
+      border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; font-weight: 700;
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), filter .25s var(--ease), background .25s var(--ease);
+      will-change: transform;
     }
-    button.btn:hover, .btn-link:hover { transform: translateY(-1px); }
-    .btn-primary { background: var(--accent); color: white; box-shadow: 0 8px 16px rgba(185,108,47,.18); }
-    .btn-secondary { background: #f3e0c1; color: var(--ink); }
-    .btn-danger { background: #f8d8d2; color: var(--warning); }
-    .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+    button.btn:hover, .btn-link:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    button.btn:active, .btn-link:active { transform: translateY(0) scale(.97); transition-duration: .1s; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: white; box-shadow: 0 8px 20px rgba(185,108,47,.28); }
+    .btn-primary:hover { box-shadow: 0 12px 26px rgba(185,108,47,.36); }
+    .btn-secondary { background: rgba(243,224,193,0.85); color: var(--ink); backdrop-filter: blur(6px); }
+    .btn-secondary:hover { background: rgba(243,224,193,1); }
+    .btn-danger { background: rgba(248,216,210,0.9); color: var(--warning); }
+    .btn-danger:hover { background: rgba(248,216,210,1); box-shadow: 0 10px 20px rgba(201,70,60,.18); }
+    .btn-ghost { background: rgba(255,255,255,0.35); border: 1px solid var(--line); color: var(--ink); backdrop-filter: blur(6px); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.6); }
+    .btn-ghost.active { background: var(--accent); color: white; border-color: transparent; }
 
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); font-size: 13px; }
     th { color: var(--muted); font-weight: 700; }
     td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    tbody tr { transition: background .2s var(--ease); }
+    tbody tr:hover { background: rgba(255,255,255,0.4); }
 
-    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); cursor: pointer; }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); cursor: pointer; transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+    .thumb:hover { transform: scale(1.06); box-shadow: var(--shadow); }
     .photo-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .photo-item { position: relative; }
-    .photo-item .remove-photo { position: absolute; top: -6px; right: -6px; border-radius: 999px; border: 0; width: 20px; height: 20px; cursor: pointer; background: var(--warning); color: white; }
+    .photo-item .remove-photo { position: absolute; top: -6px; right: -6px; border-radius: 999px; border: 0; width: 20px; height: 20px; cursor: pointer; background: var(--warning); color: white; transition: transform .2s var(--ease); }
+    .photo-item .remove-photo:hover { transform: scale(1.15); }
 
     .empty-state {
-      padding: 24px; text-align: center; background: #fff9ef; border: 1px dashed #e8cfb0; border-radius: 14px; color: var(--muted);
+      padding: 24px; text-align: center; background: rgba(255,249,239,0.6); backdrop-filter: blur(8px); border: 1px dashed rgba(232,207,176,0.8); border-radius: 14px; color: var(--muted);
     }
     .empty-state strong { display: block; color: var(--ink); margin-bottom: 4px; }
 
-    .modal { position: fixed; inset: 0; background: rgba(38, 29, 22, 0.6); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
-    .modal.open { display: flex; }
-    .modal-card { width: min(440px, 100%); background: white; border-radius: 20px; padding: 18px; box-shadow: var(--shadow); }
+    .modal { position: fixed; inset: 0; background: rgba(38, 29, 22, 0.45); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; transition: background .3s var(--ease); }
+    .modal.open { display: flex; animation: fadeIn .25s var(--ease); }
+    .modal-card {
+      width: min(440px, 100%); background: rgba(255,255,255,0.75); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.6); border-radius: 20px; padding: 18px; box-shadow: var(--shadow-hover);
+      animation: scaleIn .3s var(--ease);
+    }
     .modal-card h4 { margin: 0 0 8px; }
 
-    .toast { position: fixed; right: 18px; bottom: 18px; background: #2f241c; color: white; padding: 12px 14px; border-radius: 999px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: all .25s ease; z-index: 1100; }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast {
+      position: fixed; right: 18px; bottom: 18px; background: rgba(47,36,28,0.85); backdrop-filter: blur(10px); color: white; padding: 12px 14px; border-radius: 999px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px) scale(.96); pointer-events: none;
+      transition: opacity .35s var(--ease), transform .35s var(--ease); z-index: 1100;
+    }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
 
     .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .warning-row { color: var(--warning); font-weight: 700; }
 
     .hidden { display: none !important; }
+
+    .view-section:not(.hidden) { animation: fadeInUp .4s var(--ease); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .auth-screen {
+      position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px;
+      background: radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 45%),
+                  radial-gradient(circle at 85% 0%, #ffe9d1 0%, transparent 40%),
+                  linear-gradient(135deg, #fcf4e8 0%, var(--bg) 60%, #f3e6d4 100%);
+    }
+    .auth-card {
+      width: min(380px, 100%); background: rgba(255,255,255,0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.6); border-radius: 22px; padding: 28px; box-shadow: var(--shadow-hover);
+      animation: scaleIn .3s var(--ease);
+    }
+    .auth-card h1 { margin: 0 0 4px; font-size: 22px; }
+    .auth-card > p.muted { margin: 0 0 18px; }
+    .auth-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 999px; }
+    .auth-tab { flex: 1; border: 0; background: transparent; padding: 8px 10px; border-radius: 999px; cursor: pointer; font-weight: 700; color: var(--muted); transition: background .25s var(--ease), color .25s var(--ease); }
+    .auth-tab.active { background: white; color: var(--accent); box-shadow: var(--shadow); }
+    .auth-form { display: flex; flex-direction: column; gap: 12px; }
+    .auth-form.hidden { display: none; }
+    .auth-error { color: var(--warning); font-size: 13px; margin-top: 12px; background: rgba(248,216,210,0.5); padding: 10px 12px; border-radius: 12px; }
+    .auth-error.hidden { display: none; }
+    .user-badge { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
+    .user-badge strong { font-size: 14px; }
+    #appRoot.hidden { display: none; }
 
     @media (max-width: 900px) {
       .app { grid-template-columns: 1fr; }
@@ -145,7 +238,46 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h1>小店记账本</h1>
+      <p class="muted">登录账号，多人协同管理这家店</p>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-tab="login">登录</button>
+        <button type="button" class="auth-tab" data-tab="register">注册新账号</button>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <div class="form-group full">
+          <label>邮箱</label>
+          <input id="loginEmail" type="email" required autocomplete="username" />
+        </div>
+        <div class="form-group full">
+          <label>密码</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%;">登录</button>
+      </form>
+      <form id="registerForm" class="auth-form hidden">
+        <div class="form-group full">
+          <label>姓名</label>
+          <input id="registerName" required />
+        </div>
+        <div class="form-group full">
+          <label>邮箱</label>
+          <input id="registerEmail" type="email" required autocomplete="username" />
+        </div>
+        <div class="form-group full">
+          <label>设置密码（至少 6 位）</label>
+          <input id="registerPassword" type="password" required minlength="6" autocomplete="new-password" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%;">注册</button>
+        <p class="muted" style="font-size:12px; margin:0;">新注册的账号默认是"员工"权限，需要老板去 Supabase 后台 Table Editor 里手动升级成店长/老板。</p>
+      </form>
+      <p id="authError" class="auth-error hidden"></p>
+    </div>
+  </div>
+
+  <div class="app hidden" id="appRoot">
     <aside class="sidebar">
       <div class="brand">
         <h1>小店记账本</h1>
@@ -156,7 +288,7 @@
       <button class="nav-btn" data-target="purchase">📦 进货</button>
       <button class="nav-btn" data-target="sale">💵 销售</button>
       <button class="nav-btn" data-target="inventory">📋 库存台账</button>
-      <button class="nav-btn" data-target="finance">🧾 收支流水</button>
+      <button class="nav-btn" data-target="finance" data-roles="boss,manager">🧾 收支流水</button>
     </aside>
 
     <main class="main">
@@ -165,7 +297,14 @@
           <h2 id="pageTitle">今日概览</h2>
           <div class="meta" id="pageHint">看看今天的生意和库存情况。</div>
         </div>
-        <button class="btn btn-secondary mobile-toggle" id="mobileMenuBtn">☰ 菜单</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="user-badge">
+            <strong id="currentUserName">-</strong>
+            <span class="tag" id="currentUserRole">-</span>
+          </div>
+          <button class="btn btn-ghost" id="logoutBtn" type="button">退出登录</button>
+          <button class="btn btn-secondary mobile-toggle" id="mobileMenuBtn">☰ 菜单</button>
+        </div>
       </div>
 
       <section id="overview" class="view-section">
@@ -209,14 +348,36 @@
           </div>
         </div>
 
-        <div class="panel" style="margin-top: 16px;">
+        <div class="panel" style="margin-top: 16px;" data-roles="boss,manager">
           <div class="section-title">
             <div>
               <h3>操作日志</h3>
-              <p>每一次改动都会留下痕迹，方便对账和回看。</p>
+              <p>每一次改动都会留下痕迹，方便对账和回看。数据保存在云端，团队成员登录后都能看到。</p>
+            </div>
+            <div class="chip-row">
+              <select id="exportFormatSelect" style="border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:700;">
+                <option value="" selected disabled>导出 ▾</option>
+                <option value="json">导出快照备份（JSON，仅供留档查看）</option>
+                <option value="csv">导出 Excel（CSV）</option>
+                <option value="pdf">导出 PDF</option>
+              </select>
+              <button class="btn btn-danger" id="clearLogBtn" type="button" data-roles="boss">清空日志</button>
             </div>
           </div>
-          <div id="operationLogList" class="list"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>操作人</th>
+                  <th>类型</th>
+                  <th>对象</th>
+                  <th>详情</th>
+                </tr>
+              </thead>
+              <tbody id="operationLogList"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -257,7 +418,7 @@
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel" data-roles="boss,manager">
             <div class="section-title">
               <div>
                 <h3 id="productFormTitle">新增商品</h3>
@@ -281,11 +442,11 @@
                 </div>
                 <div class="form-group">
                   <label>进价</label>
-                  <input id="productCost" type="number" step="0.01" required />
+                  <input id="productCost" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group">
                   <label>售价</label>
-                  <input id="productPrice" type="number" step="0.01" required />
+                  <input id="productPrice" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group">
                   <label>当前库存</label>
@@ -344,11 +505,11 @@
                 </div>
                 <div class="form-group">
                   <label>进价</label>
-                  <input id="purchaseCost" type="number" step="0.01" required />
+                  <input id="purchaseCost" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group">
                   <label>总金额</label>
-                  <input id="purchaseTotal" type="number" step="0.01" required />
+                  <input id="purchaseTotal" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group full">
                   <label>采购凭证照片（最多 6 张）</label>
@@ -372,6 +533,24 @@
               <div>
                 <h3>最近进货</h3>
                 <p>最近几次进货，确认库存是否跟着涨上来。</p>
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="purchaseSearch">按商品/供应商搜索</label>
+                <input id="purchaseSearch" placeholder="例如：可乐 或 天天批发" />
+              </div>
+              <div class="form-group">
+                <label for="purchaseFilterStart">开始日期</label>
+                <input id="purchaseFilterStart" type="date" />
+              </div>
+              <div class="form-group">
+                <label for="purchaseFilterEnd">结束日期</label>
+                <input id="purchaseFilterEnd" type="date" />
+              </div>
+              <div class="form-group" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-secondary" id="purchaseFilterClear">清除筛选</button>
               </div>
             </div>
             <div id="purchaseList" class="list"></div>
@@ -405,11 +584,11 @@
                 </div>
                 <div class="form-group">
                   <label>售价</label>
-                  <input id="salePrice" type="number" step="0.01" required />
+                  <input id="salePrice" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group">
                   <label>总金额</label>
-                  <input id="saleTotal" type="number" step="0.01" required />
+                  <input id="saleTotal" type="number" min="0" step="0.01" required />
                 </div>
                 <div class="form-group">
                   <label>支付方式</label>
@@ -444,6 +623,24 @@
                 <p>看一眼最近几单，知道今天的客流和库存消耗。</p>
               </div>
             </div>
+            <div class="form-grid" style="margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="saleSearch">按商品/支付方式搜索</label>
+                <input id="saleSearch" placeholder="例如：可乐 或 微信" />
+              </div>
+              <div class="form-group">
+                <label for="saleFilterStart">开始日期</label>
+                <input id="saleFilterStart" type="date" />
+              </div>
+              <div class="form-group">
+                <label for="saleFilterEnd">结束日期</label>
+                <input id="saleFilterEnd" type="date" />
+              </div>
+              <div class="form-group" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-secondary" id="saleFilterClear">清除筛选</button>
+              </div>
+            </div>
             <div id="saleList" class="list"></div>
           </div>
         </div>
@@ -474,7 +671,7 @@
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel" data-roles="boss,manager">
             <div class="section-title">
               <div>
                 <h3>盘点调整</h3>
@@ -493,8 +690,8 @@
                   <select id="adjustProduct" required></select>
                 </div>
                 <div class="form-group">
-                  <label>调整前数量</label>
-                  <input id="adjustBefore" type="number" min="0" required />
+                  <label>调整前数量（自动带出，不可改）</label>
+                  <input id="adjustBefore" type="number" min="0" required readonly style="background:#f3ede2;" />
                 </div>
                 <div class="form-group">
                   <label>调整后数量</label>
@@ -588,13 +785,24 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const STORAGE_KEY = 'retail-demo-v1';
+    // ============================================================
+    // 云端连接配置（Supabase）
+    // ============================================================
+    const SUPABASE_URL = 'https://lhfenfukqonnefnxkhnk.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_wy3uoAY-65H3BmfE78eurg_7xJ2QGM-';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const roleLabels = { boss: '老板', manager: '店长', staff: '员工' };
+
     const state = {
       products: [],
       purchases: [],
       sales: [],
       stockAdjustments: [],
+      operationLogs: [],
+      profilesById: {},
+      profile: null,
       currentSection: 'overview',
       currentRange: 'day',
       pendingDelete: null,
@@ -615,6 +823,23 @@
       pageHint: document.getElementById('pageHint'),
       warningList: document.getElementById('warningList'),
       recentList: document.getElementById('recentList'),
+      operationLogList: document.getElementById('operationLogList'),
+      authScreen: document.getElementById('authScreen'),
+      appRoot: document.getElementById('appRoot'),
+      loginForm: document.getElementById('loginForm'),
+      loginEmail: document.getElementById('loginEmail'),
+      loginPassword: document.getElementById('loginPassword'),
+      registerForm: document.getElementById('registerForm'),
+      registerName: document.getElementById('registerName'),
+      registerEmail: document.getElementById('registerEmail'),
+      registerPassword: document.getElementById('registerPassword'),
+      authError: document.getElementById('authError'),
+      authTabs: document.querySelectorAll('.auth-tab'),
+      currentUserName: document.getElementById('currentUserName'),
+      currentUserRole: document.getElementById('currentUserRole'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      exportFormatSelect: document.getElementById('exportFormatSelect'),
+      clearLogBtn: document.getElementById('clearLogBtn'),
       todaySales: document.getElementById('todaySales'),
       todayOrders: document.getElementById('todayOrders'),
       todayProfit: document.getElementById('todayProfit'),
@@ -637,6 +862,7 @@
       productPhotoPreview: document.getElementById('productPhotoPreview'),
       cancelProductEdit: document.getElementById('cancelProductEdit'),
       purchaseForm: document.getElementById('purchaseForm'),
+      purchaseEditId: document.getElementById('purchaseEditId'),
       purchaseDate: document.getElementById('purchaseDate'),
       purchaseSupplier: document.getElementById('purchaseSupplier'),
       purchaseProduct: document.getElementById('purchaseProduct'),
@@ -646,8 +872,15 @@
       purchaseNote: document.getElementById('purchaseNote'),
       purchasePhotoInput: document.getElementById('purchasePhotoInput'),
       purchasePhotoPreview: document.getElementById('purchasePhotoPreview'),
+      purchaseSubmitBtn: document.getElementById('purchaseSubmitBtn'),
+      cancelPurchaseEdit: document.getElementById('cancelPurchaseEdit'),
       purchaseList: document.getElementById('purchaseList'),
+      purchaseSearch: document.getElementById('purchaseSearch'),
+      purchaseFilterStart: document.getElementById('purchaseFilterStart'),
+      purchaseFilterEnd: document.getElementById('purchaseFilterEnd'),
+      purchaseFilterClear: document.getElementById('purchaseFilterClear'),
       saleForm: document.getElementById('saleForm'),
+      saleEditId: document.getElementById('saleEditId'),
       saleDate: document.getElementById('saleDate'),
       saleProduct: document.getElementById('saleProduct'),
       saleQty: document.getElementById('saleQty'),
@@ -657,7 +890,13 @@
       saleNote: document.getElementById('saleNote'),
       salePhotoInput: document.getElementById('salePhotoInput'),
       salePhotoPreview: document.getElementById('salePhotoPreview'),
+      saleSubmitBtn: document.getElementById('saleSubmitBtn'),
+      cancelSaleEdit: document.getElementById('cancelSaleEdit'),
       saleList: document.getElementById('saleList'),
+      saleSearch: document.getElementById('saleSearch'),
+      saleFilterStart: document.getElementById('saleFilterStart'),
+      saleFilterEnd: document.getElementById('saleFilterEnd'),
+      saleFilterClear: document.getElementById('saleFilterClear'),
       inventoryTable: document.getElementById('inventoryTable'),
       adjustmentForm: document.getElementById('adjustmentForm'),
       adjustDate: document.getElementById('adjustDate'),
@@ -691,55 +930,255 @@
       finance: { title: '收支流水', hint: '收入和支出一起看，心里更稳。' }
     };
 
-    function loadData() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        seedData();
+    // ============================================================
+    // 数据库行 <-> 页面内部对象 的字段映射（数据库是 snake_case，页面沿用原来的 camelCase）
+    // ============================================================
+    function mapProductFromDb(row) {
+      return {
+        id: row.id, name: row.name, category: row.category, sku: row.sku,
+        costPrice: Number(row.cost_price || 0), salePrice: Number(row.sale_price || 0),
+        stock: Number(row.stock || 0), threshold: Number(row.threshold || 0),
+        photo: row.photo_url || '', note: row.note || '', createdAt: row.created_at
+      };
+    }
+    function mapPurchaseFromDb(row) {
+      return {
+        id: row.id, date: row.date, supplier: row.supplier, productId: row.product_id,
+        qty: Number(row.qty || 0), costPrice: Number(row.cost_price || 0), total: Number(row.total || 0),
+        receiptPhotos: row.receipt_photos || [], note: row.note || ''
+      };
+    }
+    function mapSaleFromDb(row) {
+      return {
+        id: row.id, date: row.date, productId: row.product_id, qty: Number(row.qty || 0),
+        salePrice: Number(row.sale_price || 0), total: Number(row.total || 0), payMethod: row.pay_method,
+        receiptPhoto: row.receipt_photo || '', note: row.note || ''
+      };
+    }
+    function mapAdjustmentFromDb(row) {
+      return {
+        id: row.id, date: row.date, productId: row.product_id,
+        before: Number(row.before_qty || 0), after: Number(row.after_qty || 0), reason: row.reason || ''
+      };
+    }
+    function mapLogFromDb(row) {
+      const d = new Date(row.occurred_at);
+      const pad = (n) => String(n).padStart(2, '0');
+      return {
+        id: row.id,
+        date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+        time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        operator: state.profilesById[row.operator_id] || '未知',
+        action: row.action, target: row.target || '', detail: row.detail || ''
+      };
+    }
+
+    function friendlyDbError(error) {
+      const msg = (error && error.message) || '';
+      if (msg.includes('stock_non_negative')) return '库存不够了，操作失败（可能有其他人刚改过库存）';
+      if (msg.includes('duplicate key') && msg.includes('sku')) return '条码/编码重复了，换一个吧';
+      if (msg.includes('row-level security') || msg.includes('permission')) return '你的账号权限不够做这个操作';
+      return msg || '保存失败，请检查网络后重试';
+    }
+
+    async function fetchAllData() {
+      const [productsRes, purchasesRes, salesRes, adjustmentsRes, profilesRes, logsRes] = await Promise.all([
+        sb.from('products').select('*').order('created_at'),
+        sb.from('purchases').select('*').order('date'),
+        sb.from('sales').select('*').order('date'),
+        sb.from('stock_adjustments').select('*').order('date'),
+        sb.from('profiles').select('*'),
+        sb.from('operation_logs').select('*').order('occurred_at', { ascending: false }).limit(200)
+      ]);
+      state.profilesById = {};
+      (profilesRes.data || []).forEach((p) => { state.profilesById[p.id] = p.display_name; });
+      state.products = (productsRes.data || []).map(mapProductFromDb);
+      state.purchases = (purchasesRes.data || []).map(mapPurchaseFromDb);
+      state.sales = (salesRes.data || []).map(mapSaleFromDb);
+      state.stockAdjustments = (adjustmentsRes.data || []).map(mapAdjustmentFromDb);
+      state.operationLogs = (logsRes.data || []).map(mapLogFromDb).reverse();
+    }
+
+    async function adjustStock(productId, delta) {
+      const { data, error } = await sb.rpc('adjust_stock', { p_product_id: productId, p_delta: delta });
+      if (error) throw error;
+      return data;
+    }
+
+    async function logOperation(action, target, detail) {
+      try {
+        await sb.from('operation_logs').insert({
+          operator_id: state.profile ? state.profile.id : null,
+          action, target, detail
+        });
+      } catch (error) {
+        console.error('写操作日志失败', error);
+      }
+    }
+
+    // ============================================================
+    // 角色权限
+    // ============================================================
+    function canManage() {
+      return !!state.profile && (state.profile.role === 'boss' || state.profile.role === 'manager');
+    }
+    function isBoss() {
+      return !!state.profile && state.profile.role === 'boss';
+    }
+    function applyRoleVisibility() {
+      const role = state.profile ? state.profile.role : null;
+      document.querySelectorAll('[data-roles]').forEach((el) => {
+        const allowed = el.dataset.roles.split(',');
+        el.classList.toggle('hidden', !role || !allowed.includes(role));
+      });
+    }
+
+    // ============================================================
+    // 登录 / 注册 / 登出
+    // ============================================================
+    function showAuthError(message) {
+      refs.authError.textContent = message;
+      refs.authError.classList.remove('hidden');
+    }
+    function clearAuthError() {
+      refs.authError.classList.add('hidden');
+      refs.authError.textContent = '';
+    }
+    function translateAuthError(error) {
+      const msg = (error && error.message) || '';
+      if (msg.includes('Invalid login credentials')) return '邮箱或密码不对，请再确认一下';
+      if (msg.toLowerCase().includes('already registered')) return '这个邮箱已经注册过了，直接登录就行';
+      if (msg.includes('Password should be at least')) return '密码至少需要 6 位';
+      if (msg.includes('Unable to validate email address')) return '邮箱格式不对';
+      return msg || '出错了，请重试';
+    }
+
+    let realtimeChannel = null;
+    let realtimeDebounceTimer = null;
+    function scheduleRealtimeRefresh() {
+      clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(async () => {
+        await fetchAllData();
+        renderAll();
+      }, 400);
+    }
+    function subscribeRealtime() {
+      if (realtimeChannel) return;
+      realtimeChannel = sb.channel('shop-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'purchases' }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_adjustments' }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'operation_logs' }, scheduleRealtimeRefresh)
+        .subscribe();
+    }
+    function unsubscribeRealtime() {
+      if (realtimeChannel) {
+        sb.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    }
+
+    async function onLoggedIn(session) {
+      const userId = session.user.id;
+      let profileRow = null;
+      for (let attempt = 0; attempt < 3 && !profileRow; attempt++) {
+        const { data } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+        profileRow = data;
+        if (!profileRow) await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+      if (!profileRow) {
+        showAuthError('登录成功，但读取账号信息失败，请刷新页面重试');
         return;
       }
-      try {
-        const parsed = JSON.parse(raw);
-        state.products = parsed.products || [];
-        state.purchases = parsed.purchases || [];
-        state.sales = parsed.sales || [];
-        state.stockAdjustments = parsed.stockAdjustments || [];
-      } catch (error) {
-        console.error(error);
-        seedData();
+      state.profile = { id: profileRow.id, displayName: profileRow.display_name, role: profileRow.role };
+      refs.authScreen.classList.add('hidden');
+      refs.appRoot.classList.remove('hidden');
+      refs.currentUserName.textContent = state.profile.displayName;
+      refs.currentUserRole.textContent = roleLabels[state.profile.role] || state.profile.role;
+      applyRoleVisibility();
+      await fetchAllData();
+      setDefaultDates();
+      renderAll();
+      switchSection('overview');
+      subscribeRealtime();
+    }
+
+    function onLoggedOut() {
+      state.profile = null;
+      state.products = [];
+      state.purchases = [];
+      state.sales = [];
+      state.stockAdjustments = [];
+      state.operationLogs = [];
+      state.profilesById = {};
+      unsubscribeRealtime();
+      refs.appRoot.classList.add('hidden');
+      refs.authScreen.classList.remove('hidden');
+      refs.loginForm.reset();
+      refs.registerForm.reset();
+      clearAuthError();
+    }
+
+    async function initSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        await onLoggedIn(session);
       }
+      sb.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session && !state.profile) {
+          onLoggedIn(session);
+        } else if (event === 'SIGNED_OUT') {
+          onLoggedOut();
+        }
+      });
     }
 
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        products: state.products,
-        purchases: state.purchases,
-        sales: state.sales,
-        stockAdjustments: state.stockAdjustments
-      }));
-    }
+    refs.authTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        refs.authTabs.forEach((t) => t.classList.toggle('active', t === tab));
+        clearAuthError();
+        if (tab.dataset.tab === 'login') {
+          refs.loginForm.classList.remove('hidden');
+          refs.registerForm.classList.add('hidden');
+        } else {
+          refs.loginForm.classList.add('hidden');
+          refs.registerForm.classList.remove('hidden');
+        }
+      });
+    });
 
-    function seedData() {
-      state.products = [
-        { id: 'p1', name: '可口可乐 330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
-        { id: 'p2', name: '脉动青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
-        { id: 'p3', name: '卫龙辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
-      ];
-      state.purchases = [
-        { id: 'r1', date: todayString(), supplier: '天天批发', productId: 'p1', qty: 30, costPrice: 2.8, total: 84, receiptPhotos: [], note: '周初补货' },
-        { id: 'r2', date: todayString(), supplier: '食杂仓', productId: 'p3', qty: 20, costPrice: 1.2, total: 24, receiptPhotos: [], note: '店里上架' }
-      ];
-      state.sales = [
-        { id: 's1', date: todayString(), productId: 'p1', qty: 6, salePrice: 4.5, total: 27, payMethod: '微信', receiptPhoto: '', note: '连带饮料' }
-      ];
-      state.stockAdjustments = [
-        { id: 'a1', date: todayString(), productId: 'p2', before: 10, after: 6, reason: '盘点后发现少了 4 盒' }
-      ];
-      saveData();
-    }
+    refs.loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearAuthError();
+      const email = refs.loginEmail.value.trim();
+      const password = refs.loginPassword.value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) showAuthError(translateAuthError(error));
+    });
+
+    refs.registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearAuthError();
+      const name = refs.registerName.value.trim();
+      const email = refs.registerEmail.value.trim();
+      const password = refs.registerPassword.value;
+      const { error } = await sb.auth.signUp({ email, password, options: { data: { display_name: name } } });
+      if (error) { showAuthError(translateAuthError(error)); return; }
+      showToast('注册成功，如果项目开启了邮箱验证，请先去邮箱点确认链接再登录');
+    });
+
+    refs.logoutBtn.addEventListener('click', async () => {
+      await sb.auth.signOut();
+    });
 
     function todayString() {
-      const d = new Date();
-      return d.toISOString().slice(0, 10);
+      return nowDateString();
+    }
+
+    function parseLocalDate(dateStr) {
+      const [y, m, d] = String(dateStr || '').split('-').map(Number);
+      return new Date(y || 1970, (m || 1) - 1, d || 1);
     }
 
     function getProductById(id) {
@@ -748,6 +1187,165 @@
 
     function formatMoney(num) {
       return `¥${Number(num || 0).toFixed(2)}`;
+    }
+
+    function escapeHtml(str) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return String(str ?? '').replace(/[&<>"']/g, (ch) => map[ch]);
+    }
+
+    function nowDateString() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    function nowTimeString() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function renderOperationLog() {
+      const logs = state.operationLogs.slice().reverse().slice(0, 50);
+      if (!logs.length) {
+        refs.operationLogList.innerHTML = '<tr><td colspan="5"><div class="empty-state"><strong>还没有操作记录</strong>新增、编辑或删除后，这里会按日期自动留痕。</div></td></tr>';
+        return;
+      }
+      const actionColors = {
+        '新增商品': 'ok', '编辑商品': '', '删除商品': 'danger',
+        '新增进货': 'ok', '编辑进货': '',
+        '新增销售': 'ok', '编辑销售': '',
+        '盘点调整': ''
+      };
+      let lastDate = null;
+      const rows = [];
+      logs.forEach(item => {
+        if (item.date !== lastDate) {
+          lastDate = item.date;
+          rows.push(`<tr><td colspan="5" style="background:var(--panel-strong); font-weight:700; color:var(--accent);">${item.date}</td></tr>`);
+        }
+        const colorClass = actionColors[item.action] || '';
+        rows.push(`
+          <tr>
+            <td>${item.time}</td>
+            <td>${escapeHtml(item.operator)}</td>
+            <td><span class="tag ${colorClass}">${escapeHtml(item.action)}</span></td>
+            <td>${escapeHtml(item.target)}</td>
+            <td>${escapeHtml(item.detail)}</td>
+          </tr>`);
+      });
+      refs.operationLogList.innerHTML = rows.join('');
+    }
+
+    function exportData() {
+      const payload = {
+        products: state.products,
+        purchases: state.purchases,
+        sales: state.sales,
+        stockAdjustments: state.stockAdjustments,
+        operationLogs: state.operationLogs,
+        exportedAt: `${nowDateString()} ${nowTimeString()}`
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `小店记账本备份-${nowDateString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('备份已导出');
+    }
+
+    function csvEscape(field) {
+      const str = String(field ?? '');
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    }
+
+    function exportLogAsCsv() {
+      if (!state.operationLogs.length) {
+        showToast('还没有操作记录，没什么好导出的');
+        return;
+      }
+      const header = ['日期', '时间', '操作人', '类型', '对象', '详情'];
+      const rows = state.operationLogs.map(item => [item.date, item.time, item.operator, item.action, item.target, item.detail]);
+      const csvContent = '﻿' + [header, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `操作日志-${nowDateString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('已导出，可以直接用 Excel 打开');
+    }
+
+    function exportLogAsPdf() {
+      if (!state.operationLogs.length) {
+        showToast('还没有操作记录，没什么好导出的');
+        return;
+      }
+      const rows = state.operationLogs.map(item => `
+        <tr>
+          <td>${escapeHtml(item.date)}</td>
+          <td>${escapeHtml(item.time)}</td>
+          <td>${escapeHtml(item.operator)}</td>
+          <td>${escapeHtml(item.action)}</td>
+          <td>${escapeHtml(item.target)}</td>
+          <td>${escapeHtml(item.detail)}</td>
+        </tr>`).join('');
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showToast('浏览器拦截了打印窗口，请允许弹窗后重试');
+        return;
+      }
+      const printDoc = printWindow.document;
+      printDoc.title = `操作日志-${nowDateString()}`;
+      const meta = printDoc.createElement('meta');
+      meta.setAttribute('charset', 'UTF-8');
+      printDoc.head.appendChild(meta);
+      const style = printDoc.createElement('style');
+      style.textContent = `
+        body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; padding: 24px; color: #2f241c; }
+        h1 { font-size: 18px; margin-bottom: 4px; }
+        p { color: #7b6a58; font-size: 13px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #ccc; padding: 6px 8px; font-size: 12px; text-align: left; }
+        th { background: #f5e9da; }
+      `;
+      printDoc.head.appendChild(style);
+      printDoc.body.innerHTML = `
+        <h1>小店记账本 · 操作日志</h1>
+        <p>导出时间：${nowDateString()} ${nowTimeString()}</p>
+        <table>
+          <thead><tr><th>日期</th><th>时间</th><th>操作人</th><th>类型</th><th>对象</th><th>详情</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      setTimeout(() => printWindow.print(), 300);
+    }
+
+    function clearOperationLogs() {
+      if (!state.operationLogs.length) {
+        showToast('操作日志本来就是空的');
+        return;
+      }
+      openConfirm({
+        title: '清空操作日志',
+        body: `确定要清空全部 ${state.operationLogs.length} 条操作日志吗？清空后无法恢复，建议先导出备份。此操作不影响商品、进货、销售等业务数据。`,
+        onConfirm: async () => {
+          const { error } = await sb.from('operation_logs').delete().not('id', 'is', null);
+          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
+          state.operationLogs = [];
+          renderOperationLog();
+          closeConfirm();
+          showToast('操作日志已清空');
+        }
+      });
     }
 
     function showToast(message) {
@@ -779,7 +1377,7 @@
       refs.imageModalImg.removeAttribute('src');
     }
 
-    function compressImage(file) {
+    function compressImageToBlob(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -791,7 +1389,7 @@
             canvas.height = img.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -799,6 +1397,15 @@
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+    }
+
+    async function uploadPhoto(file) {
+      const blob = await compressImageToBlob(file);
+      const path = `${state.profile.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error } = await sb.storage.from('shop-photos').upload(path, blob, { contentType: 'image/jpeg' });
+      if (error) throw error;
+      const { data } = sb.storage.from('shop-photos').getPublicUrl(path);
+      return data.publicUrl;
     }
 
     async function handlePhotoSelection(fileList, targetArray, previewEl, kind, limit = 6) {
@@ -810,11 +1417,16 @@
         return;
       }
       const selected = files.slice(0, remaining);
-      for (const file of selected) {
-        const dataUrl = await compressImage(file);
-        targetArray.push(dataUrl);
+      showToast('照片上传中…');
+      try {
+        for (const file of selected) {
+          const url = await uploadPhoto(file);
+          targetArray.push(url);
+        }
+        renderPhotoPreview(previewEl, targetArray, kind);
+      } catch (error) {
+        showToast(friendlyDbError(error));
       }
-      renderPhotoPreview(previewEl, targetArray, kind);
     }
 
     function renderPhotoPreview(container, photos, kind) {
@@ -857,12 +1469,28 @@
     }
 
     function renderSelectOptions() {
-      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${item.name}</option>`).join('');
+      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${escapeHtml(item.name)}</option>`).join('');
+      const prevPurchase = refs.purchaseProduct.value;
+      const prevSale = refs.saleProduct.value;
+      const prevAdjust = refs.adjustProduct.value;
       refs.purchaseProduct.innerHTML = options;
       refs.saleProduct.innerHTML = options;
       refs.adjustProduct.innerHTML = options;
-      refs.productFilter.innerHTML = ['<option value="">全部分类</option>', ...new Set(state.products.map(item => item.category))].map(cat => `<option value="${cat}">${cat}</option>`).join('');
-      refs.productFilter.value = '';
+      const stillExists = (id) => state.products.some(item => item.id === id);
+      if (stillExists(prevPurchase)) refs.purchaseProduct.value = prevPurchase;
+      if (stillExists(prevSale)) refs.saleProduct.value = prevSale;
+      if (stillExists(prevAdjust)) refs.adjustProduct.value = prevAdjust;
+
+      const prevFilter = refs.productFilter.value;
+      refs.productFilter.innerHTML = ['<option value="">全部分类</option>', ...new Set(state.products.map(item => item.category))].map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+      const filterStillExists = Array.from(refs.productFilter.options).some(opt => opt.value === prevFilter);
+      refs.productFilter.value = filterStillExists ? prevFilter : '';
+      syncAdjustBefore();
+    }
+
+    function syncAdjustBefore() {
+      const product = getProductById(refs.adjustProduct.value);
+      refs.adjustBefore.value = product ? product.stock : 0;
     }
 
     function renderDashboard() {
@@ -885,14 +1513,14 @@
         <div class="item-card">
           <div class="list-row">
             <div>
-              <strong>${item.name}</strong>
+              <strong>${escapeHtml(item.name)}</strong>
               <div class="muted">当前库存 ${item.stock}，提醒线 ${item.threshold}</div>
             </div>
             <span class="tag danger">赶紧补货</span>
           </div>
         </div>`).join('') : '<div class="empty-state"><strong>今天还不用急着补货</strong>库存都在安全线以上，继续保持。</div>';
 
-      const recent = [...state.sales.map(item => ({ type: '销售', ...item })), ...state.purchases.map(item => ({ type: '进货', ...item }))].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+      const recent = [...state.sales.map(item => ({ type: '销售', ...item })), ...state.purchases.map(item => ({ type: '进货', ...item }))].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date)).slice(0, 5);
       refs.recentList.innerHTML = recent.length ? recent.map(item => {
         const product = getProductById(item.productId);
         const name = product ? product.name : '未知商品';
@@ -900,7 +1528,7 @@
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${item.type} · ${name}</strong>
+                <strong>${item.type} · ${escapeHtml(name)}</strong>
                 <div class="muted">${item.date} · ${item.qty} ${item.type === '销售' ? '件' : '件'}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
@@ -922,66 +1550,114 @@
           <td>
             <div class="list-row">
               <div>
-                <strong>${item.name}</strong>
-                <div class="muted">${item.sku}</div>
+                <strong>${escapeHtml(item.name)}</strong>
+                <div class="muted">${escapeHtml(item.sku)}</div>
               </div>
-              ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${item.name}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
+              ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${escapeHtml(item.name)}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
             </div>
           </td>
-          <td>${item.category}</td>
+          <td>${escapeHtml(item.category)}</td>
           <td>${item.stock}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
           <td class="actions">
-            <button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
-            <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>
+            ${canManage() ? `<button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
+            <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>` : '<span class="muted">仅查看</span>'}
           </td>
         </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没找到合适的货</strong>换个关键词或分类再试一次吧。</div></td></tr>';
     }
 
+    function filterPurchases() {
+      const search = refs.purchaseSearch.value.trim().toLowerCase();
+      const start = refs.purchaseFilterStart.value;
+      const end = refs.purchaseFilterEnd.value;
+      return state.purchases.filter(item => {
+        const product = getProductById(item.productId);
+        const name = product ? product.name.toLowerCase() : '';
+        const supplier = (item.supplier || '').toLowerCase();
+        const matchSearch = !search || name.includes(search) || supplier.includes(search);
+        const matchStart = !start || item.date >= start;
+        const matchEnd = !end || item.date <= end;
+        return matchSearch && matchStart && matchEnd;
+      });
+    }
+
     function renderPurchases() {
-      refs.purchaseList.innerHTML = state.purchases.length ? state.purchases.slice().reverse().map(item => {
+      const filtered = filterPurchases();
+      const hasAnyRecords = state.purchases.length > 0;
+      const emptyMessage = hasAnyRecords
+        ? '<div class="empty-state"><strong>没有符合条件的进货记录</strong>换个关键词或调整日期范围再试试。</div>'
+        : '<div class="empty-state"><strong>还没有进货记录</strong>先登记一次，库存就会慢慢长起来。</div>';
+      refs.purchaseList.innerHTML = filtered.length ? filtered.slice().reverse().map(item => {
         const product = getProductById(item.productId);
         return `
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${product ? product.name : '未知商品'}</strong>
-                <div class="muted">${item.date} · 供应商 ${item.supplier}</div>
+                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <div class="muted">${item.date} · 供应商 ${escapeHtml(item.supplier)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
             </div>
             <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 进价 ${formatMoney(item.costPrice || 0)}</div>
             ${item.receiptPhotos && item.receiptPhotos.length ? `<div class="photo-list">${item.receiptPhotos.map(photo => `<img class="thumb" src="${photo}" alt="凭证" onclick="window.openImageModal('${photo}')" />`).join('')}</div>` : ''}
+            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+              <button class="btn-link btn-secondary" onclick="editPurchase('${item.id}')">编辑</button>
+              <button class="btn-link btn-danger" onclick="requestDeletePurchase('${item.id}')">删</button>
+            </div>` : ''}
           </div>`;
-      }).join('') : '<div class="empty-state"><strong>还没有进货记录</strong>先登记一次，库存就会慢慢长起来。</div>';
+      }).join('') : emptyMessage;
+    }
+
+    function filterSales() {
+      const search = refs.saleSearch.value.trim().toLowerCase();
+      const start = refs.saleFilterStart.value;
+      const end = refs.saleFilterEnd.value;
+      return state.sales.filter(item => {
+        const product = getProductById(item.productId);
+        const name = product ? product.name.toLowerCase() : '';
+        const payMethod = (item.payMethod || '').toLowerCase();
+        const matchSearch = !search || name.includes(search) || payMethod.includes(search);
+        const matchStart = !start || item.date >= start;
+        const matchEnd = !end || item.date <= end;
+        return matchSearch && matchStart && matchEnd;
+      });
     }
 
     function renderSales() {
-      refs.saleList.innerHTML = state.sales.length ? state.sales.slice().reverse().map(item => {
+      const filtered = filterSales();
+      const hasAnyRecords = state.sales.length > 0;
+      const emptyMessage = hasAnyRecords
+        ? '<div class="empty-state"><strong>没有符合条件的销售记录</strong>换个关键词或调整日期范围再试试。</div>'
+        : '<div class="empty-state"><strong>还没有销售记录</strong>先登记一单，库存就会有变化。</div>';
+      refs.saleList.innerHTML = filtered.length ? filtered.slice().reverse().map(item => {
         const product = getProductById(item.productId);
         return `
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${product ? product.name : '未知商品'}</strong>
-                <div class="muted">${item.date} · ${item.payMethod}</div>
+                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <div class="muted">${item.date} · ${escapeHtml(item.payMethod)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
             </div>
             <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 售价 ${formatMoney(item.salePrice || 0)}</div>
             ${item.receiptPhoto ? `<div class="photo-list"><img class="thumb" src="${item.receiptPhoto}" alt="销售凭证" onclick="window.openImageModal('${item.receiptPhoto}')" /></div>` : ''}
+            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+              <button class="btn-link btn-secondary" onclick="editSale('${item.id}')">编辑</button>
+              <button class="btn-link btn-danger" onclick="requestDeleteSale('${item.id}')">删</button>
+            </div>` : ''}
           </div>`;
-      }).join('') : '<div class="empty-state"><strong>还没有销售记录</strong>先登记一单，库存就会有变化。</div>';
+      }).join('') : emptyMessage;
     }
 
     function renderInventory() {
       refs.inventoryTable.innerHTML = state.products.length ? state.products.map(item => `
         <tr>
-          <td><strong>${item.name}</strong><div class="muted">${item.sku}</div></td>
+          <td><strong>${escapeHtml(item.name)}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
           <td>${item.stock}</td>
           <td>${item.threshold}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
-          <td><button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button></td>
+          <td>${canManage() ? `<button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button>` : '<span class="muted">仅查看</span>'}</td>
         </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没有商品</strong>先新建一件货，台账才有内容。</div></td></tr>';
 
       refs.adjustmentList.innerHTML = state.stockAdjustments.length ? state.stockAdjustments.slice().reverse().map(item => {
@@ -990,11 +1666,14 @@
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${product ? product.name : '未知商品'}</strong>
-                <div class="muted">${item.date} · ${item.reason}</div>
+                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <div class="muted">${item.date} · ${escapeHtml(item.reason)}</div>
               </div>
               <span class="tag">${item.before} → ${item.after}</span>
             </div>
+            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+              <button class="btn-link btn-danger" onclick="requestDeleteAdjustment('${item.id}')">删</button>
+            </div>` : ''}
           </div>`;
       }).join('') : '<div class="empty-state"><strong>还没有盘点记录</strong>有时候手工校对一下，仓库更安心。</div>';
     }
@@ -1016,8 +1695,8 @@
         end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
       }
       const inRange = (date) => date >= start && date <= end;
-      const purchaseRecords = state.purchases.filter(item => inRange(new Date(item.date)));
-      const saleRecords = state.sales.filter(item => inRange(new Date(item.date)));
+      const purchaseRecords = state.purchases.filter(item => inRange(parseLocalDate(item.date)));
+      const saleRecords = state.sales.filter(item => inRange(parseLocalDate(item.date)));
       const purchaseTotal = purchaseRecords.reduce((sum, item) => sum + Number(item.total || 0), 0);
       const saleTotal = saleRecords.reduce((sum, item) => sum + Number(item.total || 0), 0);
       refs.financePurchase.textContent = formatMoney(purchaseTotal);
@@ -1036,24 +1715,24 @@
         prevStart.setMonth(prevStart.getMonth() - 1);
         prevEnd.setMonth(prevEnd.getMonth() - 1);
       }
-      const prevPurchase = state.purchases.filter(item => new Date(item.date) >= prevStart && new Date(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
-      const prevSale = state.sales.filter(item => new Date(item.date) >= prevStart && new Date(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const prevPurchase = state.purchases.filter(item => parseLocalDate(item.date) >= prevStart && parseLocalDate(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const prevSale = state.sales.filter(item => parseLocalDate(item.date) >= prevStart && parseLocalDate(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
       refs.financePurchaseDelta.textContent = `和上一${range === 'day' ? '日' : range === 'week' ? '周' : '月'}相比 ${purchaseTotal >= prevPurchase ? '多' : '少'} ${formatMoney(Math.abs(purchaseTotal - prevPurchase))}`;
       refs.financeSaleDelta.textContent = `和上一${range === 'day' ? '日' : range === 'week' ? '周' : '月'}相比 ${saleTotal >= prevSale ? '多' : '少'} ${formatMoney(Math.abs(saleTotal - prevSale))}`;
 
       const entries = [
         ...purchaseRecords.map(item => ({ date: item.date, type: '进货', productId: item.productId, amount: item.total, note: item.note || '进货' })),
         ...saleRecords.map(item => ({ date: item.date, type: '销售', productId: item.productId, amount: item.total, note: item.note || '销售' })),
-      ].sort((a, b) => new Date(b.date) - new Date(a.date));
+      ].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
       refs.financeTable.innerHTML = entries.length ? entries.map(item => {
         const product = getProductById(item.productId);
         return `
           <tr>
             <td>${item.date}</td>
             <td>${item.type}</td>
-            <td>${product ? product.name : '未知商品'}</td>
+            <td>${escapeHtml(product ? product.name : '未知商品')}</td>
             <td>${formatMoney(item.amount)}</td>
-            <td>${item.note}</td>
+            <td>${escapeHtml(item.note)}</td>
           </tr>`;
       }).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>这段时间还没账</strong>先记一笔，收支流水就有内容了。</div></td></tr>';
     }
@@ -1066,9 +1745,11 @@
       renderSales();
       renderInventory();
       renderFinance();
+      renderOperationLog();
     }
 
     function switchSection(section) {
+      if (section === 'finance' && !canManage()) section = 'overview';
       state.currentSection = section;
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === section));
       document.querySelectorAll('.view-section').forEach(el => el.classList.toggle('hidden', el.id !== section));
@@ -1106,15 +1787,18 @@
     function requestDeleteProduct(id) {
       const product = getProductById(id);
       if (!product) return;
+      const relatedCount = state.purchases.filter(item => item.productId === id).length
+        + state.sales.filter(item => item.productId === id).length
+        + state.stockAdjustments.filter(item => item.productId === id).length;
+      const relatedHint = relatedCount ? `，同时会永久删除它关联的 ${relatedCount} 条进货/销售/盘点记录，且无法恢复` : '';
       openConfirm({
         title: '删除商品',
-        body: `确定要把“${product.name}”从货架上移除吗？`,
-        onConfirm: () => {
-          state.products = state.products.filter(item => item.id !== id);
-          state.sales = state.sales.filter(item => item.productId !== id);
-          state.purchases = state.purchases.filter(item => item.productId !== id);
-          state.stockAdjustments = state.stockAdjustments.filter(item => item.productId !== id);
-          saveData();
+        body: `确定要把"${product.name}"从货架上移除吗${relatedHint}？`,
+        onConfirm: async () => {
+          const { error } = await sb.from('products').delete().eq('id', id);
+          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
+          await logOperation('删除商品', product.name, `删除前库存 ${product.stock}，进价 ${formatMoney(product.costPrice)}，售价 ${formatMoney(product.salePrice)}`);
+          await fetchAllData();
           renderAll();
           showToast('商品已经移除了');
           closeConfirm();
@@ -1131,74 +1815,291 @@
       switchSection('inventory');
     }
 
+    function requestDeletePurchase(id) {
+      const purchase = state.purchases.find(item => item.id === id);
+      if (!purchase) return;
+      const product = getProductById(purchase.productId);
+      const productName = product ? product.name : '未知商品';
+      const currentStock = product ? Number(product.stock || 0) : 0;
+      const qty = Number(purchase.qty || 0);
+      const afterStock = currentStock - qty;
+      let body = `确定要删除这条进货记录吗？删除后会从"${productName}"库存中扣除 ${qty} 件（当前 ${currentStock} → 删除后 ${afterStock}），且无法恢复。`;
+      if (afterStock < 0) {
+        body += ' ⚠ 这会导致库存变成负数，说明这批货可能已经被卖出去了，建议先核对相关销售记录。';
+      }
+      openConfirm({
+        title: '删除进货记录',
+        body,
+        onConfirm: async () => {
+          try {
+            if (product) await adjustStock(product.id, -qty);
+            const { error } = await sb.from('purchases').delete().eq('id', id);
+            if (error) throw error;
+            await logOperation('删除进货', productName, `删除进货 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
+            await fetchAllData();
+            renderAll();
+            showToast('进货记录已删除，库存已同步');
+          } catch (error) {
+            showToast(friendlyDbError(error));
+          }
+          closeConfirm();
+        }
+      });
+    }
+
+    function requestDeleteSale(id) {
+      const sale = state.sales.find(item => item.id === id);
+      if (!sale) return;
+      const product = getProductById(sale.productId);
+      const productName = product ? product.name : '未知商品';
+      const currentStock = product ? Number(product.stock || 0) : 0;
+      const qty = Number(sale.qty || 0);
+      const afterStock = currentStock + qty;
+      openConfirm({
+        title: '删除销售记录',
+        body: `确定要删除这条销售记录吗？删除后会把 ${qty} 件"${productName}"加回库存（当前 ${currentStock} → 删除后 ${afterStock}）。`,
+        onConfirm: async () => {
+          try {
+            if (product) await adjustStock(product.id, qty);
+            const { error } = await sb.from('sales').delete().eq('id', id);
+            if (error) throw error;
+            await logOperation('删除销售', productName, `删除销售 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
+            await fetchAllData();
+            renderAll();
+            showToast('销售记录已删除，库存已同步');
+          } catch (error) {
+            showToast(friendlyDbError(error));
+          }
+          closeConfirm();
+        }
+      });
+    }
+
+    function requestDeleteAdjustment(id) {
+      const adjustment = state.stockAdjustments.find(item => item.id === id);
+      if (!adjustment) return;
+      const product = getProductById(adjustment.productId);
+      const productName = product ? product.name : '未知商品';
+      openConfirm({
+        title: '删除盘点记录',
+        body: '确定要删除这条盘点记录吗？这只是移除历史记录，不会改变当前库存数量。',
+        onConfirm: async () => {
+          const { error } = await sb.from('stock_adjustments').delete().eq('id', id);
+          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
+          await logOperation('删除盘点', productName, `删除盘点记录（${adjustment.before} → ${adjustment.after}）`);
+          await fetchAllData();
+          renderAll();
+          closeConfirm();
+          showToast('盘点记录已删除');
+        }
+      });
+    }
+
+    function resetPurchaseForm() {
+      refs.purchaseForm.reset();
+      refs.purchaseEditId.value = '';
+      refs.purchaseDate.value = todayString();
+      state.tempPurchasePhotos = [];
+      renderPhotoPreview(refs.purchasePhotoPreview, [], 'purchase');
+      refs.purchaseSubmitBtn.textContent = '登记进货';
+      refs.cancelPurchaseEdit.classList.add('hidden');
+    }
+
+    function editPurchase(id) {
+      const purchase = state.purchases.find(item => item.id === id);
+      if (!purchase) return;
+      refs.purchaseEditId.value = purchase.id;
+      refs.purchaseDate.value = purchase.date;
+      refs.purchaseSupplier.value = purchase.supplier;
+      refs.purchaseProduct.value = purchase.productId;
+      refs.purchaseQty.value = purchase.qty;
+      refs.purchaseCost.value = purchase.costPrice;
+      refs.purchaseTotal.value = purchase.total;
+      refs.purchaseNote.value = purchase.note || '';
+      state.tempPurchasePhotos = (purchase.receiptPhotos || []).slice();
+      renderPhotoPreview(refs.purchasePhotoPreview, state.tempPurchasePhotos, 'purchase');
+      refs.purchaseSubmitBtn.textContent = '保存修改';
+      refs.cancelPurchaseEdit.classList.remove('hidden');
+      switchSection('purchase');
+    }
+
+    function resetSaleForm() {
+      refs.saleForm.reset();
+      refs.saleEditId.value = '';
+      refs.saleDate.value = todayString();
+      state.tempSalePhoto = '';
+      renderPhotoPreview(refs.salePhotoPreview, [], 'sale');
+      refs.saleSubmitBtn.textContent = '登记销售';
+      refs.cancelSaleEdit.classList.add('hidden');
+    }
+
+    function editSale(id) {
+      const sale = state.sales.find(item => item.id === id);
+      if (!sale) return;
+      refs.saleEditId.value = sale.id;
+      refs.saleDate.value = sale.date;
+      refs.saleProduct.value = sale.productId;
+      refs.saleQty.value = sale.qty;
+      refs.salePrice.value = sale.salePrice;
+      refs.saleTotal.value = sale.total;
+      refs.salePayMethod.value = sale.payMethod;
+      refs.saleNote.value = sale.note || '';
+      state.tempSalePhoto = sale.receiptPhoto || '';
+      renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
+      refs.saleSubmitBtn.textContent = '保存修改';
+      refs.cancelSaleEdit.classList.remove('hidden');
+      switchSection('sale');
+    }
+
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => switchSection(btn.dataset.target));
     });
 
-    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-      document.querySelector('.sidebar').style.display = document.querySelector('.sidebar').style.display === 'flex' ? 'none' : 'flex';
+    document.getElementById('mobileMenuBtn').addEventListener('click', (event) => {
+      const sidebar = document.querySelector('.sidebar');
+      const willHide = sidebar.style.display !== 'none';
+      sidebar.style.display = willHide ? 'none' : 'flex';
+      event.currentTarget.textContent = willHide ? '☰ 显示菜单' : '✕ 收起菜单';
     });
 
-    refs.productForm.addEventListener('submit', (event) => {
+    refs.productForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const payload = {
-        id: refs.productId.value || `p-${Date.now()}`,
-        name: refs.productName.value.trim(),
-        category: refs.productCategory.value.trim(),
-        sku: refs.productSku.value.trim(),
-        costPrice: Number(refs.productCost.value || 0),
-        salePrice: Number(refs.productPrice.value || 0),
-        stock: Number(refs.productStock.value || 0),
-        threshold: Number(refs.productThreshold.value || 0),
-        photo: state.tempProductPhoto,
-        note: refs.productNote.value.trim(),
-        createdAt: todayString()
-      };
-      const existingIndex = state.products.findIndex(item => item.id === payload.id);
-      if (existingIndex >= 0) {
-        state.products[existingIndex] = { ...state.products[existingIndex], ...payload };
-      } else {
-        state.products.push(payload);
+      if (!canManage()) { showToast('你的账号权限不能管理商品'); return; }
+      const editId = refs.productId.value;
+      const name = refs.productName.value.trim();
+      const category = refs.productCategory.value.trim();
+      const sku = refs.productSku.value.trim();
+      const costPrice = Number(refs.productCost.value || 0);
+      const salePrice = Number(refs.productPrice.value || 0);
+      const stock = Number(refs.productStock.value || 0);
+      const threshold = Number(refs.productThreshold.value || 0);
+      const note = refs.productNote.value.trim();
+      const photo = state.tempProductPhoto;
+
+      const duplicateSku = state.products.find(item => item.id !== editId && item.sku.trim().toLowerCase() === sku.toLowerCase());
+      if (duplicateSku) {
+        showToast(`条码/编码"${sku}"已经被"${duplicateSku.name}"占用了，换一个吧`);
+        return;
       }
-      saveData();
-      renderAll();
-      resetProductForm();
-      showToast('商品已经保存');
+
+      try {
+        const row = {
+          name, category, sku, cost_price: costPrice, sale_price: salePrice,
+          stock, threshold, photo_url: photo || null, note: note || null
+        };
+        if (editId) {
+          const old = getProductById(editId);
+          const { error } = await sb.from('products').update(row).eq('id', editId);
+          if (error) throw error;
+          await logOperation('编辑商品', name, `进价 ${formatMoney(old.costPrice)} → ${formatMoney(costPrice)}，售价 ${formatMoney(old.salePrice)} → ${formatMoney(salePrice)}，库存 ${old.stock} → ${stock}`);
+        } else {
+          row.created_by = state.profile.id;
+          const { error } = await sb.from('products').insert(row);
+          if (error) throw error;
+          await logOperation('新增商品', name, `进价 ${formatMoney(costPrice)}，售价 ${formatMoney(salePrice)}，库存 ${stock}`);
+        }
+        await fetchAllData();
+        renderAll();
+        resetProductForm();
+        showToast('商品已经保存');
+      } catch (error) {
+        showToast(friendlyDbError(error));
+      }
     });
 
     refs.cancelProductEdit.addEventListener('click', resetProductForm);
     refs.productPhotoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      state.tempProductPhoto = await compressImage(file);
-      renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
+      try {
+        showToast('照片上传中…');
+        state.tempProductPhoto = await uploadPhoto(file);
+        renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
+      } catch (error) {
+        showToast(friendlyDbError(error));
+      }
+      e.target.value = '';
     });
 
-    refs.purchaseForm.addEventListener('submit', (event) => {
+    refs.purchaseForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const product = getProductById(refs.purchaseProduct.value);
       if (!product) return;
-      const payload = {
-        id: `r-${Date.now()}`,
-        date: refs.purchaseDate.value,
-        supplier: refs.purchaseSupplier.value.trim(),
-        productId: refs.purchaseProduct.value,
-        qty: Number(refs.purchaseQty.value || 0),
-        costPrice: Number(refs.purchaseCost.value || 0),
-        total: Number(refs.purchaseTotal.value || 0),
-        receiptPhotos: state.tempPurchasePhotos.slice(),
-        note: refs.purchaseNote.value.trim()
+      const editId = refs.purchaseEditId.value;
+      const qty = Number(refs.purchaseQty.value || 0);
+      const costPrice = Number(refs.purchaseCost.value || 0);
+      const total = Number(refs.purchaseTotal.value || 0);
+
+      const savePurchase = async () => {
+        try {
+          if (editId) {
+            const existing = state.purchases.find(item => item.id === editId);
+            if (!existing) return;
+            const oldTotal = Number(existing.total || 0);
+            const oldQty = Number(existing.qty || 0);
+            const oldProductId = existing.productId;
+            if (oldProductId === product.id) {
+              await adjustStock(product.id, qty - oldQty);
+            } else {
+              await adjustStock(oldProductId, -oldQty);
+              await adjustStock(product.id, qty);
+            }
+            const { error } = await sb.from('purchases').update({
+              date: refs.purchaseDate.value,
+              supplier: refs.purchaseSupplier.value.trim(),
+              product_id: refs.purchaseProduct.value,
+              qty, cost_price: costPrice, total,
+              receipt_photos: state.tempPurchasePhotos.slice(),
+              note: refs.purchaseNote.value.trim() || null
+            }).eq('id', editId);
+            if (error) throw error;
+            await logOperation('编辑进货', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(total)}（数量 ${oldQty} → ${qty}）`);
+            showToast('进货记录已更新，库存已同步');
+          } else {
+            const { error } = await sb.from('purchases').insert({
+              date: refs.purchaseDate.value,
+              supplier: refs.purchaseSupplier.value.trim(),
+              product_id: refs.purchaseProduct.value,
+              qty, cost_price: costPrice, total,
+              receipt_photos: state.tempPurchasePhotos.slice(),
+              note: refs.purchaseNote.value.trim() || null,
+              created_by: state.profile.id
+            });
+            if (error) throw error;
+            await adjustStock(product.id, qty);
+            await sb.from('products').update({ cost_price: costPrice }).eq('id', product.id);
+            await logOperation('新增进货', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
+            showToast('进货已经登记，库存已更新');
+          }
+          await fetchAllData();
+          renderAll();
+          resetPurchaseForm();
+        } catch (error) {
+          showToast(friendlyDbError(error));
+        }
       };
-      state.purchases.push(payload);
-      product.stock = Number(product.stock || 0) + payload.qty;
-      product.costPrice = payload.costPrice;
-      saveData();
-      renderAll();
-      refs.purchaseForm.reset();
-      refs.purchaseDate.value = todayString();
-      state.tempPurchasePhotos = [];
-      renderPhotoPreview(refs.purchasePhotoPreview, [], 'purchase');
-      showToast('进货已经登记，库存已更新');
+
+      if (editId) {
+        const existing = state.purchases.find(item => item.id === editId);
+        if (existing) {
+          const oldProduct = getProductById(existing.productId);
+          const resultStock = oldProduct === product
+            ? Number(product.stock || 0) - Number(existing.qty || 0) + qty
+            : Number(product.stock || 0) + qty;
+          if (resultStock < 0) {
+            openConfirm({
+              title: '库存将变为负数',
+              body: `把这条进货数量改小后，"${product.name}"库存会变成 ${resultStock} 件（负数），可能是因为这批货已经被卖出去了。确定要继续保存吗？`,
+              onConfirm: () => {
+                closeConfirm();
+                savePurchase();
+              }
+            });
+            return;
+          }
+        }
+      }
+      savePurchase();
     });
 
     refs.purchasePhotoInput.addEventListener('change', async (e) => {
@@ -1206,66 +2107,111 @@
       e.target.value = '';
     });
 
-    refs.saleForm.addEventListener('submit', (event) => {
+    refs.saleForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const product = getProductById(refs.saleProduct.value);
       const qty = Number(refs.saleQty.value || 0);
       if (!product) return;
-      if (qty > Number(product.stock || 0)) {
-        showToast('库存不足，先补货再卖吧');
-        return;
+      const editId = refs.saleEditId.value;
+
+      try {
+        if (editId) {
+          const existing = state.sales.find(item => item.id === editId);
+          if (!existing) return;
+          const oldTotal = Number(existing.total || 0);
+          const oldQty = Number(existing.qty || 0);
+          const oldProduct = getProductById(existing.productId);
+          const availableStock = Number(product.stock || 0) + (oldProduct === product ? Number(existing.qty || 0) : 0);
+          if (qty > availableStock) {
+            showToast('库存不足，先补货再卖吧');
+            return;
+          }
+          if (existing.productId === product.id) {
+            await adjustStock(product.id, oldQty - qty);
+          } else {
+            await adjustStock(existing.productId, oldQty);
+            await adjustStock(product.id, -qty);
+          }
+          const total = Number(refs.saleTotal.value || 0);
+          const { error } = await sb.from('sales').update({
+            date: refs.saleDate.value,
+            product_id: refs.saleProduct.value,
+            qty, sale_price: Number(refs.salePrice.value || 0), total,
+            pay_method: refs.salePayMethod.value,
+            receipt_photo: state.tempSalePhoto || null,
+            note: refs.saleNote.value.trim() || null
+          }).eq('id', editId);
+          if (error) throw error;
+          await logOperation('编辑销售', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(total)}（数量 ${oldQty} → ${qty}）`);
+          showToast('销售记录已更新，库存已同步');
+        } else {
+          if (qty > Number(product.stock || 0)) {
+            showToast('库存不足，先补货再卖吧');
+            return;
+          }
+          const total = Number(refs.saleTotal.value || 0);
+          const { error } = await sb.from('sales').insert({
+            date: refs.saleDate.value,
+            product_id: refs.saleProduct.value,
+            qty, sale_price: Number(refs.salePrice.value || 0), total,
+            pay_method: refs.salePayMethod.value,
+            receipt_photo: state.tempSalePhoto || null,
+            note: refs.saleNote.value.trim() || null,
+            created_by: state.profile.id
+          });
+          if (error) throw error;
+          await adjustStock(product.id, -qty);
+          await logOperation('新增销售', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
+          showToast('销售已经登记，库存已扣减');
+        }
+        await fetchAllData();
+        renderAll();
+        resetSaleForm();
+      } catch (error) {
+        showToast(friendlyDbError(error));
       }
-      const payload = {
-        id: `s-${Date.now()}`,
-        date: refs.saleDate.value,
-        productId: refs.saleProduct.value,
-        qty,
-        salePrice: Number(refs.salePrice.value || 0),
-        total: Number(refs.saleTotal.value || 0),
-        payMethod: refs.salePayMethod.value,
-        receiptPhoto: state.tempSalePhoto,
-        note: refs.saleNote.value.trim()
-      };
-      state.sales.push(payload);
-      product.stock = Number(product.stock || 0) - qty;
-      saveData();
-      renderAll();
-      refs.saleForm.reset();
-      refs.saleDate.value = todayString();
-      state.tempSalePhoto = '';
-      renderPhotoPreview(refs.salePhotoPreview, [], 'sale');
-      showToast('销售已经登记，库存已扣减');
     });
 
     refs.salePhotoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      state.tempSalePhoto = await compressImage(file);
-      renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
+      try {
+        showToast('照片上传中…');
+        state.tempSalePhoto = await uploadPhoto(file);
+        renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
+      } catch (error) {
+        showToast(friendlyDbError(error));
+      }
       e.target.value = '';
     });
 
-    refs.adjustmentForm.addEventListener('submit', (event) => {
+    refs.adjustmentForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (!canManage()) { showToast('你的账号权限不能做盘点调整'); return; }
       const product = getProductById(refs.adjustProduct.value);
       if (!product) return;
       const before = Number(refs.adjustBefore.value || 0);
       const after = Number(refs.adjustAfter.value || 0);
-      const payload = {
-        id: `a-${Date.now()}`,
-        date: refs.adjustDate.value,
-        productId: refs.adjustProduct.value,
-        before,
-        after,
-        reason: refs.adjustReason.value.trim()
-      };
-      state.stockAdjustments.push(payload);
-      product.stock = after;
-      saveData();
-      renderAll();
-      refs.adjustmentForm.reset();
-      refs.adjustDate.value = todayString();
-      showToast('盘点记录已保存');
+      const reason = refs.adjustReason.value.trim();
+      try {
+        const { error: adjError } = await sb.from('stock_adjustments').insert({
+          date: refs.adjustDate.value,
+          product_id: refs.adjustProduct.value,
+          before_qty: before, after_qty: after, reason: reason || null,
+          created_by: state.profile.id
+        });
+        if (adjError) throw adjError;
+        const { error: prodError } = await sb.from('products').update({ stock: after }).eq('id', product.id);
+        if (prodError) throw prodError;
+        await logOperation('盘点调整', product.name, `库存 ${before} → ${after}${reason ? '，原因：' + reason : ''}`);
+        await fetchAllData();
+        renderAll();
+        refs.adjustmentForm.reset();
+        refs.adjustDate.value = todayString();
+        showToast('盘点记录已保存');
+      } catch (error) {
+        showToast(friendlyDbError(error));
+      }
     });
 
     refs.confirmAction.addEventListener('click', () => {
@@ -1290,6 +2236,8 @@
     refs.productSearch.addEventListener('input', renderProducts);
     refs.productFilter.addEventListener('change', renderProducts);
 
+    refs.adjustProduct.addEventListener('change', syncAdjustBefore);
+
     refs.purchaseQty.addEventListener('input', () => {
       const qty = Number(refs.purchaseQty.value || 0);
       const cost = Number(refs.purchaseCost.value || 0);
@@ -1310,16 +2258,58 @@
       const price = Number(refs.salePrice.value || 0);
       refs.saleTotal.value = (qty * price).toFixed(2);
     });
+    refs.saleProduct.addEventListener('change', () => {
+      const product = getProductById(refs.saleProduct.value);
+      if (!product) return;
+      refs.salePrice.value = product.salePrice;
+      const qty = Number(refs.saleQty.value || 0);
+      const price = Number(refs.salePrice.value || 0);
+      refs.saleTotal.value = (qty * price).toFixed(2);
+    });
+
+    refs.cancelPurchaseEdit.addEventListener('click', resetPurchaseForm);
+    refs.cancelSaleEdit.addEventListener('click', resetSaleForm);
+
+    refs.purchaseSearch.addEventListener('input', renderPurchases);
+    refs.purchaseFilterStart.addEventListener('change', renderPurchases);
+    refs.purchaseFilterEnd.addEventListener('change', renderPurchases);
+    refs.purchaseFilterClear.addEventListener('click', () => {
+      refs.purchaseSearch.value = '';
+      refs.purchaseFilterStart.value = '';
+      refs.purchaseFilterEnd.value = '';
+      renderPurchases();
+    });
+
+    refs.saleSearch.addEventListener('input', renderSales);
+    refs.saleFilterStart.addEventListener('change', renderSales);
+    refs.saleFilterEnd.addEventListener('change', renderSales);
+    refs.saleFilterClear.addEventListener('click', () => {
+      refs.saleSearch.value = '';
+      refs.saleFilterStart.value = '';
+      refs.saleFilterEnd.value = '';
+      renderSales();
+    });
+
+    refs.exportFormatSelect.addEventListener('change', () => {
+      const format = refs.exportFormatSelect.value;
+      if (format === 'json') exportData();
+      else if (format === 'csv') exportLogAsCsv();
+      else if (format === 'pdf') exportLogAsPdf();
+      refs.exportFormatSelect.value = '';
+    });
+    refs.clearLogBtn.addEventListener('click', clearOperationLogs);
 
     window.openImageModal = openImageModal;
     window.editProduct = editProduct;
     window.requestDeleteProduct = requestDeleteProduct;
     window.prepareAdjustment = prepareAdjustment;
+    window.editPurchase = editPurchase;
+    window.editSale = editSale;
+    window.requestDeletePurchase = requestDeletePurchase;
+    window.requestDeleteSale = requestDeleteSale;
+    window.requestDeleteAdjustment = requestDeleteAdjustment;
 
-    loadData();
-    setDefaultDates();
-    renderAll();
-    switchSection('overview');
+    initSession();
   </script>
 </body>
 </html>
