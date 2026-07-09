@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>门店进销存管理 Demo</title>
+  <style>
+    :root {
+      --bg: #f6efe4;
+      --panel: #fffdf8;
+      --panel-strong: #fdf0d8;
+      --ink: #2f241c;
+      --muted: #7b6a58;
+      --accent: #b96c2f;
+      --accent-2: #d9883d;
+      --success: #4b7c41;
+      --warning: #c9463c;
+      --line: #e7dccf;
+      --shadow: 0 10px 24px rgba(47, 36, 28, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #fcf4e8 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+    img { max-width: 100%; display: block; }
+    button, input, select, textarea { font: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: #2d2017;
+      color: #fff7ee;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .brand { display: flex; flex-direction: column; gap: 8px; }
+    .brand h1 { font-size: 20px; margin: 0; }
+    .brand p { margin: 0; color: rgba(255,247,238,0.78); font-size: 13px; }
+    .nav-btn {
+      background: transparent; border: 0; color: inherit; text-align: left; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px; transition: background .2s ease;
+    }
+    .nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,0.12); }
+
+    .main { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 14px 18px; background: rgba(255,253,248,0.8); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+    }
+    .topbar h2 { margin: 0; font-size: 18px; }
+    .topbar .meta { color: var(--muted); font-size: 13px; }
+    .mobile-toggle { display: none; }
+
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+    }
+    .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .section-title h3 { margin: 0; font-size: 17px; }
+    .section-title p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--panel-strong); color: var(--accent); font-size: 12px; font-weight: 700; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .stat-card { background: linear-gradient(145deg, #fff7ea, #f8e6c3); border: 1px solid #edd8b7; border-radius: 16px; padding: 16px; }
+    .stat-card .label { color: var(--muted); font-size: 13px; }
+    .stat-card .value { font-size: 24px; font-weight: 800; margin-top: 6px; }
+    .stat-card small { display: block; margin-top: 6px; color: var(--muted); }
+
+    .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; }
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .item-card { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: #fff; }
+    .list-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .tag { padding: 5px 8px; border-radius: 999px; background: #f5e9da; color: var(--accent); font-size: 12px; font-weight: 700; }
+    .danger { color: var(--warning); }
+    .ok { color: var(--success); }
+
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 13px; color: var(--muted); }
+    input, select, textarea {
+      border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 10px 12px; border-radius: 12px; outline: none;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(217,136,61,0.15); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    button.btn, .btn-link {
+      border: 0; border-radius: 999px; padding: 10px 14px; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; font-weight: 700;
+    }
+    button.btn:hover, .btn-link:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: white; box-shadow: 0 8px 16px rgba(185,108,47,.18); }
+    .btn-secondary { background: #f3e0c1; color: var(--ink); }
+    .btn-danger { background: #f8d8d2; color: var(--warning); }
+    .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    th { color: var(--muted); font-weight: 700; }
+    td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); cursor: pointer; }
+    .photo-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .photo-item { position: relative; }
+    .photo-item .remove-photo { position: absolute; top: -6px; right: -6px; border-radius: 999px; border: 0; width: 20px; height: 20px; cursor: pointer; background: var(--warning); color: white; }
+
+    .empty-state {
+      padding: 24px; text-align: center; background: #fff9ef; border: 1px dashed #e8cfb0; border-radius: 14px; color: var(--muted);
+    }
+    .empty-state strong { display: block; color: var(--ink); margin-bottom: 4px; }
+
+    .modal { position: fixed; inset: 0; background: rgba(38, 29, 22, 0.6); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+    .modal.open { display: flex; }
+    .modal-card { width: min(440px, 100%); background: white; border-radius: 20px; padding: 18px; box-shadow: var(--shadow); }
+    .modal-card h4 { margin: 0 0 8px; }
+
+    .toast { position: fixed; right: 18px; bottom: 18px; background: #2f241c; color: white; padding: 12px 14px; border-radius: 999px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: all .25s ease; z-index: 1100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .warning-row { color: var(--warning); font-weight: 700; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; left: 0; right: 0; bottom: 0; top: auto; flex-direction: row; justify-content: space-around; padding: 10px 8px; z-index: 800; border-top: 1px solid rgba(255,255,255,.12); }
+      .brand { display: none; }
+      .nav-btn { padding: 8px 10px; font-size: 13px; border-radius: 999px; }
+      .main { padding: 16px 16px 84px; }
+      .stats-grid, .grid-2, .form-grid { grid-template-columns: 1fr; }
+      .mobile-toggle { display: inline-flex; }
+      .topbar { align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>小店记账本</h1>
+        <p>给门店老板的日常经营小助手</p>
+      </div>
+      <button class="nav-btn active" data-target="overview">🏠 今日概览</button>
+      <button class="nav-btn" data-target="products">🧺 商品管理</button>
+      <button class="nav-btn" data-target="purchase">📦 进货</button>
+      <button class="nav-btn" data-target="sale">💵 销售</button>
+      <button class="nav-btn" data-target="inventory">📋 库存台账</button>
+      <button class="nav-btn" data-target="finance">🧾 收支流水</button>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2 id="pageTitle">今日概览</h2>
+          <div class="meta" id="pageHint">看看今天的生意和库存情况。</div>
+        </div>
+        <button class="btn btn-secondary mobile-toggle" id="mobileMenuBtn">☰ 菜单</button>
+      </div>
+
+      <section id="overview" class="view-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="label">今日销售额</div>
+            <div class="value" id="todaySales">¥0</div>
+            <small>今天已经卖出去的金额</small>
+          </div>
+          <div class="stat-card">
+            <div class="label">今日销售笔数</div>
+            <div class="value" id="todayOrders">0</div>
+            <small>已经完成的交易次数</small>
+          </div>
+          <div class="stat-card">
+            <div class="label">今日毛利估算</div>
+            <div class="value" id="todayProfit">¥0</div>
+            <small>按进价和售价估算</small>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 16px;">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>库存预警</h3>
+                <p>数量低于提醒线的商品，先补货再说。</p>
+              </div>
+              <span class="badge" id="warningCount">0 条</span>
+            </div>
+            <div id="warningList" class="list"></div>
+          </div>
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>最近 5 笔流水</h3>
+                <p>近几笔出入库，先看一眼手头在忙什么。</p>
+              </div>
+            </div>
+            <div id="recentList" class="list"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 16px;">
+          <div class="section-title">
+            <div>
+              <h3>操作日志</h3>
+              <p>每一次改动都会留下痕迹，方便对账和回看。</p>
+            </div>
+          </div>
+          <div id="operationLogList" class="list"></div>
+        </div>
+      </section>
+
+      <section id="products" class="view-section hidden">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>商品列表</h3>
+                <p>把货品信息和照片放在一起，卖货时更省事。</p>
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom: 12px;">
+              <div class="form-group">
+                <label for="productSearch">按名称找货</label>
+                <input id="productSearch" placeholder="例如：可乐" />
+              </div>
+              <div class="form-group">
+                <label for="productFilter">按分类筛选</label>
+                <select id="productFilter">
+                  <option value="">全部分类</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>商品</th>
+                    <th>分类</th>
+                    <th>库存</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3 id="productFormTitle">新增商品</h3>
+                <p>给每样货拍张照片，回头一眼就知道是什么。</p>
+              </div>
+            </div>
+            <form id="productForm">
+              <input type="hidden" id="productId" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>商品名称</label>
+                  <input id="productName" required />
+                </div>
+                <div class="form-group">
+                  <label>分类</label>
+                  <input id="productCategory" required />
+                </div>
+                <div class="form-group">
+                  <label>条码/编码</label>
+                  <input id="productSku" required />
+                </div>
+                <div class="form-group">
+                  <label>进价</label>
+                  <input id="productCost" type="number" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>售价</label>
+                  <input id="productPrice" type="number" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>当前库存</label>
+                  <input id="productStock" type="number" min="0" required />
+                </div>
+                <div class="form-group">
+                  <label>库存预警线</label>
+                  <input id="productThreshold" type="number" min="0" required />
+                </div>
+                <div class="form-group">
+                  <label>商品照片</label>
+                  <input id="productPhotoInput" type="file" accept="image/*" capture="environment" />
+                </div>
+                <div class="form-group full">
+                  <label>备注</label>
+                  <textarea id="productNote" placeholder="比如：今天刚进的新品、容易过期"></textarea>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" type="submit">保存商品</button>
+                <button class="btn btn-secondary" type="button" id="cancelProductEdit">取消编辑</button>
+              </div>
+            </form>
+            <div id="productPhotoPreview" class="photo-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="purchase" class="view-section hidden">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>进货记录</h3>
+                <p>把每次入库都记下来，后面看成本更轻松。</p>
+              </div>
+            </div>
+            <form id="purchaseForm">
+              <input type="hidden" id="purchaseEditId" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>进货日期</label>
+                  <input id="purchaseDate" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label>供应商</label>
+                  <input id="purchaseSupplier" required />
+                </div>
+                <div class="form-group">
+                  <label>商品</label>
+                  <select id="purchaseProduct" required></select>
+                </div>
+                <div class="form-group">
+                  <label>数量</label>
+                  <input id="purchaseQty" type="number" min="1" required />
+                </div>
+                <div class="form-group">
+                  <label>进价</label>
+                  <input id="purchaseCost" type="number" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>总金额</label>
+                  <input id="purchaseTotal" type="number" step="0.01" required />
+                </div>
+                <div class="form-group full">
+                  <label>采购凭证照片（最多 6 张）</label>
+                  <input id="purchasePhotoInput" type="file" accept="image/*" capture="environment" multiple />
+                </div>
+                <div class="form-group full">
+                  <label>备注</label>
+                  <textarea id="purchaseNote" placeholder="比如：送货单有折扣、临时补货"></textarea>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" type="submit" id="purchaseSubmitBtn">登记进货</button>
+                <button class="btn btn-secondary hidden" type="button" id="cancelPurchaseEdit">取消修改</button>
+              </div>
+            </form>
+            <div id="purchasePhotoPreview" class="photo-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>最近进货</h3>
+                <p>最近几次进货，确认库存是否跟着涨上来。</p>
+              </div>
+            </div>
+            <div id="purchaseList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sale" class="view-section hidden">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>销售出库</h3>
+                <p>把每一单卖出去的货都记清楚，避免库存少了还卖。</p>
+              </div>
+            </div>
+            <form id="saleForm">
+              <input type="hidden" id="saleEditId" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>销售日期</label>
+                  <input id="saleDate" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label>商品</label>
+                  <select id="saleProduct" required></select>
+                </div>
+                <div class="form-group">
+                  <label>数量</label>
+                  <input id="saleQty" type="number" min="1" required />
+                </div>
+                <div class="form-group">
+                  <label>售价</label>
+                  <input id="salePrice" type="number" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>总金额</label>
+                  <input id="saleTotal" type="number" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>支付方式</label>
+                  <select id="salePayMethod">
+                    <option value="现金">现金</option>
+                    <option value="微信">微信</option>
+                    <option value="支付宝">支付宝</option>
+                    <option value="银行卡">银行卡</option>
+                  </select>
+                </div>
+                <div class="form-group full">
+                  <label>收据/小票照片（可选）</label>
+                  <input id="salePhotoInput" type="file" accept="image/*" capture="environment" />
+                </div>
+                <div class="form-group full">
+                  <label>备注</label>
+                  <textarea id="saleNote" placeholder="比如：客户拿了两件、免单一件"></textarea>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" type="submit" id="saleSubmitBtn">登记销售</button>
+                <button class="btn btn-secondary hidden" type="button" id="cancelSaleEdit">取消修改</button>
+              </div>
+            </form>
+            <div id="salePhotoPreview" class="photo-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>最近销售</h3>
+                <p>看一眼最近几单，知道今天的客流和库存消耗。</p>
+              </div>
+            </div>
+            <div id="saleList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="inventory" class="view-section hidden">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>库存台账</h3>
+                <p>所有商品当前库存都在这里，低于预警线的会红起来。</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>商品</th>
+                    <th>库存</th>
+                    <th>预警线</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>盘点调整</h3>
+                <p>实物和系统不一致时，马上记一笔。</p>
+              </div>
+            </div>
+            <form id="adjustmentForm">
+              <input type="hidden" id="adjustmentEditId" />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>日期</label>
+                  <input id="adjustDate" type="date" required />
+                </div>
+                <div class="form-group">
+                  <label>商品</label>
+                  <select id="adjustProduct" required></select>
+                </div>
+                <div class="form-group">
+                  <label>调整前数量</label>
+                  <input id="adjustBefore" type="number" min="0" required />
+                </div>
+                <div class="form-group">
+                  <label>调整后数量</label>
+                  <input id="adjustAfter" type="number" min="0" required />
+                </div>
+                <div class="form-group full">
+                  <label>调整原因</label>
+                  <textarea id="adjustReason" placeholder="例如：仓库漏记、损耗、盘点纠正"></textarea>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" type="submit" id="adjustmentSubmitBtn">保存盘点</button>
+                <button class="btn btn-secondary hidden" type="button" id="cancelAdjustmentEdit">取消修改</button>
+              </div>
+            </form>
+            <div id="adjustmentList" class="list" style="margin-top: 12px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="finance" class="view-section hidden">
+        <div class="panel">
+          <div class="section-title">
+            <div>
+              <h3>收支流水</h3>
+              <p>从进货和销售两边看，今天的账是不是顺着走。</p>
+            </div>
+            <div class="chip-row">
+              <button class="btn btn-ghost" data-range="day">今日</button>
+              <button class="btn btn-ghost" data-range="week">本周</button>
+              <button class="btn btn-ghost" data-range="month">本月</button>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="label">进货支出</div>
+              <div class="value" id="financePurchase">¥0</div>
+              <small id="financePurchaseDelta">和上一周期相比</small>
+            </div>
+            <div class="stat-card">
+              <div class="label">销售收入</div>
+              <div class="value" id="financeSale">¥0</div>
+              <small id="financeSaleDelta">和上一周期相比</small>
+            </div>
+            <div class="stat-card">
+              <div class="label">净额</div>
+              <div class="value" id="financeNet">¥0</div>
+              <small>收入减去支出</small>
+            </div>
+          </div>
+          <div class="table-wrap" style="margin-top: 12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>类型</th>
+                  <th>商品</th>
+                  <th>金额</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody id="financeTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="modal" id="confirmModal">
+    <div class="modal-card">
+      <h4 id="confirmTitle">确认操作</h4>
+      <p id="confirmBody">你确定要继续吗？</p>
+      <div class="btn-row" style="justify-content: flex-end;">
+        <button class="btn btn-secondary" id="cancelConfirm">取消</button>
+        <button class="btn btn-danger" id="confirmAction">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="imageModal">
+    <div class="modal-card" style="max-width: 720px;">
+      <div class="section-title">
+        <div>
+          <h3>照片预览</h3>
+          <p>点空白处关闭</p>
+        </div>
+      </div>
+      <img id="imageModalImg" alt="图片预览" style="width: 100%; border-radius: 16px;" />
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'retail-demo-v1';
+    const state = {
+      products: [],
+      purchases: [],
+      sales: [],
+      stockAdjustments: [],
+      currentSection: 'overview',
+      currentRange: 'day',
+      pendingDelete: null,
+      pendingPhoto: null,
+      tempProductPhoto: '',
+      tempPurchasePhotos: [],
+      tempSalePhoto: ''
+    };
+
+    const refs = {
+      overview: document.getElementById('overview'),
+      products: document.getElementById('products'),
+      purchase: document.getElementById('purchase'),
+      sale: document.getElementById('sale'),
+      inventory: document.getElementById('inventory'),
+      finance: document.getElementById('finance'),
+      pageTitle: document.getElementById('pageTitle'),
+      pageHint: document.getElementById('pageHint'),
+      warningList: document.getElementById('warningList'),
+      recentList: document.getElementById('recentList'),
+      todaySales: document.getElementById('todaySales'),
+      todayOrders: document.getElementById('todayOrders'),
+      todayProfit: document.getElementById('todayProfit'),
+      warningCount: document.getElementById('warningCount'),
+      productsTable: document.getElementById('productsTable'),
+      productSearch: document.getElementById('productSearch'),
+      productFilter: document.getElementById('productFilter'),
+      productForm: document.getElementById('productForm'),
+      productFormTitle: document.getElementById('productFormTitle'),
+      productId: document.getElementById('productId'),
+      productName: document.getElementById('productName'),
+      productCategory: document.getElementById('productCategory'),
+      productSku: document.getElementById('productSku'),
+      productCost: document.getElementById('productCost'),
+      productPrice: document.getElementById('productPrice'),
+      productStock: document.getElementById('productStock'),
+      productThreshold: document.getElementById('productThreshold'),
+      productNote: document.getElementById('productNote'),
+      productPhotoInput: document.getElementById('productPhotoInput'),
+      productPhotoPreview: document.getElementById('productPhotoPreview'),
+      cancelProductEdit: document.getElementById('cancelProductEdit'),
+      purchaseForm: document.getElementById('purchaseForm'),
+      purchaseDate: document.getElementById('purchaseDate'),
+      purchaseSupplier: document.getElementById('purchaseSupplier'),
+      purchaseProduct: document.getElementById('purchaseProduct'),
+      purchaseQty: document.getElementById('purchaseQty'),
+      purchaseCost: document.getElementById('purchaseCost'),
+      purchaseTotal: document.getElementById('purchaseTotal'),
+      purchaseNote: document.getElementById('purchaseNote'),
+      purchasePhotoInput: document.getElementById('purchasePhotoInput'),
+      purchasePhotoPreview: document.getElementById('purchasePhotoPreview'),
+      purchaseList: document.getElementById('purchaseList'),
+      saleForm: document.getElementById('saleForm'),
+      saleDate: document.getElementById('saleDate'),
+      saleProduct: document.getElementById('saleProduct'),
+      saleQty: document.getElementById('saleQty'),
+      salePrice: document.getElementById('salePrice'),
+      saleTotal: document.getElementById('saleTotal'),
+      salePayMethod: document.getElementById('salePayMethod'),
+      saleNote: document.getElementById('saleNote'),
+      salePhotoInput: document.getElementById('salePhotoInput'),
+      salePhotoPreview: document.getElementById('salePhotoPreview'),
+      saleList: document.getElementById('saleList'),
+      inventoryTable: document.getElementById('inventoryTable'),
+      adjustmentForm: document.getElementById('adjustmentForm'),
+      adjustDate: document.getElementById('adjustDate'),
+      adjustProduct: document.getElementById('adjustProduct'),
+      adjustBefore: document.getElementById('adjustBefore'),
+      adjustAfter: document.getElementById('adjustAfter'),
+      adjustReason: document.getElementById('adjustReason'),
+      adjustmentList: document.getElementById('adjustmentList'),
+      financeTable: document.getElementById('financeTable'),
+      financePurchase: document.getElementById('financePurchase'),
+      financeSale: document.getElementById('financeSale'),
+      financeNet: document.getElementById('financeNet'),
+      financePurchaseDelta: document.getElementById('financePurchaseDelta'),
+      financeSaleDelta: document.getElementById('financeSaleDelta'),
+      toast: document.getElementById('toast'),
+      confirmModal: document.getElementById('confirmModal'),
+      confirmTitle: document.getElementById('confirmTitle'),
+      confirmBody: document.getElementById('confirmBody'),
+      cancelConfirm: document.getElementById('cancelConfirm'),
+      confirmAction: document.getElementById('confirmAction'),
+      imageModal: document.getElementById('imageModal'),
+      imageModalImg: document.getElementById('imageModalImg')
+    };
+
+    const pageMeta = {
+      overview: { title: '今日概览', hint: '看看今天的生意和库存情况。' },
+      products: { title: '商品管理', hint: '货品名称、分类和照片都在这里。' },
+      purchase: { title: '进货', hint: '把入库记录下来，成本更清楚。' },
+      sale: { title: '销售', hint: '每一笔出库都能追到库存。' },
+      inventory: { title: '库存台账', hint: '实物和系统对得上才放心。' },
+      finance: { title: '收支流水', hint: '收入和支出一起看，心里更稳。' }
+    };
+
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        seedData();
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        state.products = parsed.products || [];
+        state.purchases = parsed.purchases || [];
+        state.sales = parsed.sales || [];
+        state.stockAdjustments = parsed.stockAdjustments || [];
+      } catch (error) {
+        console.error(error);
+        seedData();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        products: state.products,
+        purchases: state.purchases,
+        sales: state.sales,
+        stockAdjustments: state.stockAdjustments
+      }));
+    }
+
+    function seedData() {
+      state.products = [
+        { id: 'p1', name: '可口可乐 330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
+        { id: 'p2', name: '脉动青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
+        { id: 'p3', name: '卫龙辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
+      ];
+      state.purchases = [
+        { id: 'r1', date: todayString(), supplier: '天天批发', productId: 'p1', qty: 30, costPrice: 2.8, total: 84, receiptPhotos: [], note: '周初补货' },
+        { id: 'r2', date: todayString(), supplier: '食杂仓', productId: 'p3', qty: 20, costPrice: 1.2, total: 24, receiptPhotos: [], note: '店里上架' }
+      ];
+      state.sales = [
+        { id: 's1', date: todayString(), productId: 'p1', qty: 6, salePrice: 4.5, total: 27, payMethod: '微信', receiptPhoto: '', note: '连带饮料' }
+      ];
+      state.stockAdjustments = [
+        { id: 'a1', date: todayString(), productId: 'p2', before: 10, after: 6, reason: '盘点后发现少了 4 盒' }
+      ];
+      saveData();
+    }
+
+    function todayString() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function getProductById(id) {
+      return state.products.find(item => item.id === id);
+    }
+
+    function formatMoney(num) {
+      return `¥${Number(num || 0).toFixed(2)}`;
+    }
+
+    function showToast(message) {
+      refs.toast.textContent = message;
+      refs.toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => refs.toast.classList.remove('show'), 1800);
+    }
+
+    function openConfirm({ title, body, onConfirm }) {
+      refs.confirmTitle.textContent = title;
+      refs.confirmBody.textContent = body;
+      refs.confirmModal.classList.add('open');
+      state.pendingDelete = onConfirm;
+    }
+
+    function closeConfirm() {
+      refs.confirmModal.classList.remove('open');
+      state.pendingDelete = null;
+    }
+
+    function openImageModal(src) {
+      refs.imageModalImg.src = src;
+      refs.imageModal.classList.add('open');
+    }
+
+    function closeImageModal() {
+      refs.imageModal.classList.remove('open');
+      refs.imageModalImg.removeAttribute('src');
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const scale = Math.min(1, 800 / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handlePhotoSelection(fileList, targetArray, previewEl, kind, limit = 6) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+      const remaining = limit - targetArray.length;
+      if (remaining <= 0) {
+        showToast('照片数量已达上限');
+        return;
+      }
+      const selected = files.slice(0, remaining);
+      for (const file of selected) {
+        const dataUrl = await compressImage(file);
+        targetArray.push(dataUrl);
+      }
+      renderPhotoPreview(previewEl, targetArray, kind);
+    }
+
+    function renderPhotoPreview(container, photos, kind) {
+      container.innerHTML = '';
+      if (!photos.length) return;
+      photos.forEach((photo, index) => {
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        const img = document.createElement('img');
+        img.className = 'thumb';
+        img.src = photo;
+        img.alt = '照片';
+        img.addEventListener('click', () => openImageModal(photo));
+        item.appendChild(img);
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-photo';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => {
+          if (kind === 'purchase') {
+            state.tempPurchasePhotos.splice(index, 1);
+            renderPhotoPreview(container, state.tempPurchasePhotos, 'purchase');
+          } else if (kind === 'sale') {
+            state.tempSalePhoto = '';
+            renderPhotoPreview(container, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
+          } else {
+            state.tempProductPhoto = '';
+            renderPhotoPreview(container, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
+          }
+        });
+        item.appendChild(removeBtn);
+        container.appendChild(item);
+      });
+    }
+
+    function setDefaultDates() {
+      const today = todayString();
+      refs.purchaseDate.value = today;
+      refs.saleDate.value = today;
+      refs.adjustDate.value = today;
+    }
+
+    function renderSelectOptions() {
+      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${item.name}</option>`).join('');
+      refs.purchaseProduct.innerHTML = options;
+      refs.saleProduct.innerHTML = options;
+      refs.adjustProduct.innerHTML = options;
+      refs.productFilter.innerHTML = ['<option value="">全部分类</option>', ...new Set(state.products.map(item => item.category))].map(cat => `<option value="${cat}">${cat}</option>`).join('');
+      refs.productFilter.value = '';
+    }
+
+    function renderDashboard() {
+      const today = todayString();
+      const salesToday = state.sales.filter(item => item.date === today);
+      const totalSales = salesToday.reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const orderCount = salesToday.length;
+      const profit = salesToday.reduce((sum, item) => {
+        const product = getProductById(item.productId);
+        const cost = product ? Number(product.costPrice || 0) : 0;
+        return sum + (Number(item.total || 0) - Number(item.qty || 0) * cost);
+      }, 0);
+      refs.todaySales.textContent = formatMoney(totalSales);
+      refs.todayOrders.textContent = orderCount;
+      refs.todayProfit.textContent = formatMoney(profit);
+
+      const warnings = state.products.filter(item => Number(item.stock || 0) <= Number(item.threshold || 0));
+      refs.warningCount.textContent = `${warnings.length} 条`;
+      refs.warningList.innerHTML = warnings.length ? warnings.map(item => `
+        <div class="item-card">
+          <div class="list-row">
+            <div>
+              <strong>${item.name}</strong>
+              <div class="muted">当前库存 ${item.stock}，提醒线 ${item.threshold}</div>
+            </div>
+            <span class="tag danger">赶紧补货</span>
+          </div>
+        </div>`).join('') : '<div class="empty-state"><strong>今天还不用急着补货</strong>库存都在安全线以上，继续保持。</div>';
+
+      const recent = [...state.sales.map(item => ({ type: '销售', ...item })), ...state.purchases.map(item => ({ type: '进货', ...item }))].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+      refs.recentList.innerHTML = recent.length ? recent.map(item => {
+        const product = getProductById(item.productId);
+        const name = product ? product.name : '未知商品';
+        return `
+          <div class="item-card">
+            <div class="list-row">
+              <div>
+                <strong>${item.type} · ${name}</strong>
+                <div class="muted">${item.date} · ${item.qty} ${item.type === '销售' ? '件' : '件'}</div>
+              </div>
+              <span class="tag">${formatMoney(item.total || 0)}</span>
+            </div>
+          </div>`;
+      }).join('') : '<div class="empty-state"><strong>还没有流水</strong>先登记一次进货或销售，首页就会变热闹。</div>';
+    }
+
+    function renderProducts() {
+      const search = refs.productSearch.value.trim().toLowerCase();
+      const filter = refs.productFilter.value;
+      const filtered = state.products.filter(item => {
+        const matchSearch = !search || item.name.toLowerCase().includes(search) || item.sku.toLowerCase().includes(search);
+        const matchFilter = !filter || item.category === filter;
+        return matchSearch && matchFilter;
+      });
+      refs.productsTable.innerHTML = filtered.length ? filtered.map(item => `
+        <tr>
+          <td>
+            <div class="list-row">
+              <div>
+                <strong>${item.name}</strong>
+                <div class="muted">${item.sku}</div>
+              </div>
+              ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${item.name}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
+            </div>
+          </td>
+          <td>${item.category}</td>
+          <td>${item.stock}</td>
+          <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
+          <td class="actions">
+            <button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
+            <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没找到合适的货</strong>换个关键词或分类再试一次吧。</div></td></tr>';
+    }
+
+    function renderPurchases() {
+      refs.purchaseList.innerHTML = state.purchases.length ? state.purchases.slice().reverse().map(item => {
+        const product = getProductById(item.productId);
+        return `
+          <div class="item-card">
+            <div class="list-row">
+              <div>
+                <strong>${product ? product.name : '未知商品'}</strong>
+                <div class="muted">${item.date} · 供应商 ${item.supplier}</div>
+              </div>
+              <span class="tag">${formatMoney(item.total || 0)}</span>
+            </div>
+            <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 进价 ${formatMoney(item.costPrice || 0)}</div>
+            ${item.receiptPhotos && item.receiptPhotos.length ? `<div class="photo-list">${item.receiptPhotos.map(photo => `<img class="thumb" src="${photo}" alt="凭证" onclick="window.openImageModal('${photo}')" />`).join('')}</div>` : ''}
+          </div>`;
+      }).join('') : '<div class="empty-state"><strong>还没有进货记录</strong>先登记一次，库存就会慢慢长起来。</div>';
+    }
+
+    function renderSales() {
+      refs.saleList.innerHTML = state.sales.length ? state.sales.slice().reverse().map(item => {
+        const product = getProductById(item.productId);
+        return `
+          <div class="item-card">
+            <div class="list-row">
+              <div>
+                <strong>${product ? product.name : '未知商品'}</strong>
+                <div class="muted">${item.date} · ${item.payMethod}</div>
+              </div>
+              <span class="tag">${formatMoney(item.total || 0)}</span>
+            </div>
+            <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 售价 ${formatMoney(item.salePrice || 0)}</div>
+            ${item.receiptPhoto ? `<div class="photo-list"><img class="thumb" src="${item.receiptPhoto}" alt="销售凭证" onclick="window.openImageModal('${item.receiptPhoto}')" /></div>` : ''}
+          </div>`;
+      }).join('') : '<div class="empty-state"><strong>还没有销售记录</strong>先登记一单，库存就会有变化。</div>';
+    }
+
+    function renderInventory() {
+      refs.inventoryTable.innerHTML = state.products.length ? state.products.map(item => `
+        <tr>
+          <td><strong>${item.name}</strong><div class="muted">${item.sku}</div></td>
+          <td>${item.stock}</td>
+          <td>${item.threshold}</td>
+          <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
+          <td><button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button></td>
+        </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没有商品</strong>先新建一件货，台账才有内容。</div></td></tr>';
+
+      refs.adjustmentList.innerHTML = state.stockAdjustments.length ? state.stockAdjustments.slice().reverse().map(item => {
+        const product = getProductById(item.productId);
+        return `
+          <div class="item-card">
+            <div class="list-row">
+              <div>
+                <strong>${product ? product.name : '未知商品'}</strong>
+                <div class="muted">${item.date} · ${item.reason}</div>
+              </div>
+              <span class="tag">${item.before} → ${item.after}</span>
+            </div>
+          </div>`;
+      }).join('') : '<div class="empty-state"><strong>还没有盘点记录</strong>有时候手工校对一下，仓库更安心。</div>';
+    }
+
+    function renderFinance() {
+      const range = state.currentRange;
+      const now = new Date();
+      let start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      let end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      if (range === 'week') {
+        const day = now.getDay() || 7;
+        start = new Date(now);
+        start.setDate(now.getDate() - day + 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+      } else if (range === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      }
+      const inRange = (date) => date >= start && date <= end;
+      const purchaseRecords = state.purchases.filter(item => inRange(new Date(item.date)));
+      const saleRecords = state.sales.filter(item => inRange(new Date(item.date)));
+      const purchaseTotal = purchaseRecords.reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const saleTotal = saleRecords.reduce((sum, item) => sum + Number(item.total || 0), 0);
+      refs.financePurchase.textContent = formatMoney(purchaseTotal);
+      refs.financeSale.textContent = formatMoney(saleTotal);
+      refs.financeNet.textContent = formatMoney(saleTotal - purchaseTotal);
+
+      const prevStart = new Date(start);
+      const prevEnd = new Date(end);
+      if (range === 'day') {
+        prevStart.setDate(prevStart.getDate() - 1);
+        prevEnd.setDate(prevEnd.getDate() - 1);
+      } else if (range === 'week') {
+        prevStart.setDate(prevStart.getDate() - 7);
+        prevEnd.setDate(prevEnd.getDate() - 7);
+      } else if (range === 'month') {
+        prevStart.setMonth(prevStart.getMonth() - 1);
+        prevEnd.setMonth(prevEnd.getMonth() - 1);
+      }
+      const prevPurchase = state.purchases.filter(item => new Date(item.date) >= prevStart && new Date(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const prevSale = state.sales.filter(item => new Date(item.date) >= prevStart && new Date(item.date) <= prevEnd).reduce((sum, item) => sum + Number(item.total || 0), 0);
+      refs.financePurchaseDelta.textContent = `和上一${range === 'day' ? '日' : range === 'week' ? '周' : '月'}相比 ${purchaseTotal >= prevPurchase ? '多' : '少'} ${formatMoney(Math.abs(purchaseTotal - prevPurchase))}`;
+      refs.financeSaleDelta.textContent = `和上一${range === 'day' ? '日' : range === 'week' ? '周' : '月'}相比 ${saleTotal >= prevSale ? '多' : '少'} ${formatMoney(Math.abs(saleTotal - prevSale))}`;
+
+      const entries = [
+        ...purchaseRecords.map(item => ({ date: item.date, type: '进货', productId: item.productId, amount: item.total, note: item.note || '进货' })),
+        ...saleRecords.map(item => ({ date: item.date, type: '销售', productId: item.productId, amount: item.total, note: item.note || '销售' })),
+      ].sort((a, b) => new Date(b.date) - new Date(a.date));
+      refs.financeTable.innerHTML = entries.length ? entries.map(item => {
+        const product = getProductById(item.productId);
+        return `
+          <tr>
+            <td>${item.date}</td>
+            <td>${item.type}</td>
+            <td>${product ? product.name : '未知商品'}</td>
+            <td>${formatMoney(item.amount)}</td>
+            <td>${item.note}</td>
+          </tr>`;
+      }).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>这段时间还没账</strong>先记一笔，收支流水就有内容了。</div></td></tr>';
+    }
+
+    function renderAll() {
+      renderSelectOptions();
+      renderDashboard();
+      renderProducts();
+      renderPurchases();
+      renderSales();
+      renderInventory();
+      renderFinance();
+    }
+
+    function switchSection(section) {
+      state.currentSection = section;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === section));
+      document.querySelectorAll('.view-section').forEach(el => el.classList.toggle('hidden', el.id !== section));
+      const meta = pageMeta[section];
+      refs.pageTitle.textContent = meta.title;
+      refs.pageHint.textContent = meta.hint;
+    }
+
+    function resetProductForm() {
+      refs.productForm.reset();
+      refs.productId.value = '';
+      refs.productFormTitle.textContent = '新增商品';
+      state.tempProductPhoto = '';
+      refs.productPhotoPreview.innerHTML = '';
+    }
+
+    function editProduct(id) {
+      const product = getProductById(id);
+      if (!product) return;
+      refs.productId.value = product.id;
+      refs.productName.value = product.name;
+      refs.productCategory.value = product.category;
+      refs.productSku.value = product.sku;
+      refs.productCost.value = product.costPrice;
+      refs.productPrice.value = product.salePrice;
+      refs.productStock.value = product.stock;
+      refs.productThreshold.value = product.threshold;
+      refs.productNote.value = product.note || '';
+      refs.productFormTitle.textContent = '编辑商品';
+      state.tempProductPhoto = product.photo || '';
+      renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
+      switchSection('products');
+    }
+
+    function requestDeleteProduct(id) {
+      const product = getProductById(id);
+      if (!product) return;
+      openConfirm({
+        title: '删除商品',
+        body: `确定要把“${product.name}”从货架上移除吗？`,
+        onConfirm: () => {
+          state.products = state.products.filter(item => item.id !== id);
+          state.sales = state.sales.filter(item => item.productId !== id);
+          state.purchases = state.purchases.filter(item => item.productId !== id);
+          state.stockAdjustments = state.stockAdjustments.filter(item => item.productId !== id);
+          saveData();
+          renderAll();
+          showToast('商品已经移除了');
+          closeConfirm();
+        }
+      });
+    }
+
+    function prepareAdjustment(id) {
+      const product = getProductById(id);
+      if (!product) return;
+      refs.adjustProduct.value = id;
+      refs.adjustBefore.value = product.stock;
+      refs.adjustAfter.value = product.stock;
+      switchSection('inventory');
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchSection(btn.dataset.target));
+    });
+
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      document.querySelector('.sidebar').style.display = document.querySelector('.sidebar').style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    refs.productForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const payload = {
+        id: refs.productId.value || `p-${Date.now()}`,
+        name: refs.productName.value.trim(),
+        category: refs.productCategory.value.trim(),
+        sku: refs.productSku.value.trim(),
+        costPrice: Number(refs.productCost.value || 0),
+        salePrice: Number(refs.productPrice.value || 0),
+        stock: Number(refs.productStock.value || 0),
+        threshold: Number(refs.productThreshold.value || 0),
+        photo: state.tempProductPhoto,
+        note: refs.productNote.value.trim(),
+        createdAt: todayString()
+      };
+      const existingIndex = state.products.findIndex(item => item.id === payload.id);
+      if (existingIndex >= 0) {
+        state.products[existingIndex] = { ...state.products[existingIndex], ...payload };
+      } else {
+        state.products.push(payload);
+      }
+      saveData();
+      renderAll();
+      resetProductForm();
+      showToast('商品已经保存');
+    });
+
+    refs.cancelProductEdit.addEventListener('click', resetProductForm);
+    refs.productPhotoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      state.tempProductPhoto = await compressImage(file);
+      renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
+    });
+
+    refs.purchaseForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const product = getProductById(refs.purchaseProduct.value);
+      if (!product) return;
+      const payload = {
+        id: `r-${Date.now()}`,
+        date: refs.purchaseDate.value,
+        supplier: refs.purchaseSupplier.value.trim(),
+        productId: refs.purchaseProduct.value,
+        qty: Number(refs.purchaseQty.value || 0),
+        costPrice: Number(refs.purchaseCost.value || 0),
+        total: Number(refs.purchaseTotal.value || 0),
+        receiptPhotos: state.tempPurchasePhotos.slice(),
+        note: refs.purchaseNote.value.trim()
+      };
+      state.purchases.push(payload);
+      product.stock = Number(product.stock || 0) + payload.qty;
+      product.costPrice = payload.costPrice;
+      saveData();
+      renderAll();
+      refs.purchaseForm.reset();
+      refs.purchaseDate.value = todayString();
+      state.tempPurchasePhotos = [];
+      renderPhotoPreview(refs.purchasePhotoPreview, [], 'purchase');
+      showToast('进货已经登记，库存已更新');
+    });
+
+    refs.purchasePhotoInput.addEventListener('change', async (e) => {
+      await handlePhotoSelection(e.target.files, state.tempPurchasePhotos, refs.purchasePhotoPreview, 'purchase', 6);
+      e.target.value = '';
+    });
+
+    refs.saleForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const product = getProductById(refs.saleProduct.value);
+      const qty = Number(refs.saleQty.value || 0);
+      if (!product) return;
+      if (qty > Number(product.stock || 0)) {
+        showToast('库存不足，先补货再卖吧');
+        return;
+      }
+      const payload = {
+        id: `s-${Date.now()}`,
+        date: refs.saleDate.value,
+        productId: refs.saleProduct.value,
+        qty,
+        salePrice: Number(refs.salePrice.value || 0),
+        total: Number(refs.saleTotal.value || 0),
+        payMethod: refs.salePayMethod.value,
+        receiptPhoto: state.tempSalePhoto,
+        note: refs.saleNote.value.trim()
+      };
+      state.sales.push(payload);
+      product.stock = Number(product.stock || 0) - qty;
+      saveData();
+      renderAll();
+      refs.saleForm.reset();
+      refs.saleDate.value = todayString();
+      state.tempSalePhoto = '';
+      renderPhotoPreview(refs.salePhotoPreview, [], 'sale');
+      showToast('销售已经登记，库存已扣减');
+    });
+
+    refs.salePhotoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      state.tempSalePhoto = await compressImage(file);
+      renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
+      e.target.value = '';
+    });
+
+    refs.adjustmentForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const product = getProductById(refs.adjustProduct.value);
+      if (!product) return;
+      const before = Number(refs.adjustBefore.value || 0);
+      const after = Number(refs.adjustAfter.value || 0);
+      const payload = {
+        id: `a-${Date.now()}`,
+        date: refs.adjustDate.value,
+        productId: refs.adjustProduct.value,
+        before,
+        after,
+        reason: refs.adjustReason.value.trim()
+      };
+      state.stockAdjustments.push(payload);
+      product.stock = after;
+      saveData();
+      renderAll();
+      refs.adjustmentForm.reset();
+      refs.adjustDate.value = todayString();
+      showToast('盘点记录已保存');
+    });
+
+    refs.confirmAction.addEventListener('click', () => {
+      if (state.pendingDelete) state.pendingDelete();
+    });
+    refs.cancelConfirm.addEventListener('click', closeConfirm);
+    refs.confirmModal.addEventListener('click', (event) => {
+      if (event.target === refs.confirmModal) closeConfirm();
+    });
+    refs.imageModal.addEventListener('click', (event) => {
+      if (event.target === refs.imageModal) closeImageModal();
+    });
+
+    document.querySelectorAll('.btn-ghost[data-range]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.currentRange = btn.dataset.range;
+        renderFinance();
+        document.querySelectorAll('.btn-ghost[data-range]').forEach(item => item.classList.toggle('active', item === btn));
+      });
+    });
+
+    refs.productSearch.addEventListener('input', renderProducts);
+    refs.productFilter.addEventListener('change', renderProducts);
+
+    refs.purchaseQty.addEventListener('input', () => {
+      const qty = Number(refs.purchaseQty.value || 0);
+      const cost = Number(refs.purchaseCost.value || 0);
+      refs.purchaseTotal.value = (qty * cost).toFixed(2);
+    });
+    refs.purchaseCost.addEventListener('input', () => {
+      const qty = Number(refs.purchaseQty.value || 0);
+      const cost = Number(refs.purchaseCost.value || 0);
+      refs.purchaseTotal.value = (qty * cost).toFixed(2);
+    });
+    refs.saleQty.addEventListener('input', () => {
+      const qty = Number(refs.saleQty.value || 0);
+      const price = Number(refs.salePrice.value || 0);
+      refs.saleTotal.value = (qty * price).toFixed(2);
+    });
+    refs.salePrice.addEventListener('input', () => {
+      const qty = Number(refs.saleQty.value || 0);
+      const price = Number(refs.salePrice.value || 0);
+      refs.saleTotal.value = (qty * price).toFixed(2);
+    });
+
+    window.openImageModal = openImageModal;
+    window.editProduct = editProduct;
+    window.requestDeleteProduct = requestDeleteProduct;
+    window.prepareAdjustment = prepareAdjustment;
+
+    loadData();
+    setDefaultDates();
+    renderAll();
+    switchSection('overview');
+  </script>
+</body>
+</html>
