@@ -371,6 +371,10 @@
                   <input id="productName" required />
                 </div>
                 <div class="form-group">
+                  <label>规格型号</label>
+                  <input id="productSpec" placeholder="例如：330ml / 大包 / 500g" />
+                </div>
+                <div class="form-group">
                   <label>分类</label>
                   <input id="productCategory" required />
                 </div>
@@ -771,6 +775,7 @@
       productName: document.getElementById('productName'),
       productCategory: document.getElementById('productCategory'),
       productSku: document.getElementById('productSku'),
+      productSpec: document.getElementById('productSpec'),
       productCost: document.getElementById('productCost'),
       productPrice: document.getElementById('productPrice'),
       productStock: document.getElementById('productStock'),
@@ -886,9 +891,9 @@
 
     function seedData() {
       state.products = [
-        { id: 'p1', name: '可口可乐 330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
-        { id: 'p2', name: '脉动青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
-        { id: 'p3', name: '卫龙辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
+        { id: 'p1', name: '可口可乐', spec: '330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
+        { id: 'p2', name: '脉动', spec: '青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
+        { id: 'p3', name: '卫龙', spec: '辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
       ];
       state.purchases = [
         { id: 'r1', date: todayString(), supplier: '天天批发', productId: 'p1', qty: 30, costPrice: 2.8, total: 84, receiptPhotos: [], note: '周初补货' },
@@ -914,6 +919,11 @@
 
     function getProductById(id) {
       return state.products.find(item => item.id === id);
+    }
+
+    function displayProductName(product) {
+      if (!product) return '';
+      return `${product.name || ''}${product.spec ? ' · ' + product.spec : ''}`;
     }
 
     function formatMoney(num) {
@@ -1250,7 +1260,7 @@
     }
 
     function renderSelectOptions() {
-      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${escapeHtml(item.name)}</option>`).join('');
+      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${escapeHtml(displayProductName(item))}</option>`).join('');
       const prevPurchase = refs.purchaseProduct.value;
       const prevSale = refs.saleProduct.value;
       const prevAdjust = refs.adjustProduct.value;
@@ -1322,7 +1332,7 @@
       const search = refs.productSearch.value.trim().toLowerCase();
       const filter = refs.productFilter.value;
       const filtered = state.products.filter(item => {
-        const matchSearch = !search || item.name.toLowerCase().includes(search) || item.sku.toLowerCase().includes(search);
+        const matchSearch = !search || item.name.toLowerCase().includes(search) || (item.spec || '').toLowerCase().includes(search) || item.sku.toLowerCase().includes(search);
         const matchFilter = !filter || item.category === filter;
         return matchSearch && matchFilter;
       });
@@ -1331,10 +1341,10 @@
           <td>
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(item.name)}</strong>
+                <strong>${escapeHtml(displayProductName(item))}</strong>
                 <div class="muted">${escapeHtml(item.sku)}</div>
               </div>
-              ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${escapeHtml(item.name)}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
+              ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${escapeHtml(displayProductName(item))}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
             </div>
           </td>
           <td>${escapeHtml(item.category)}</td>
@@ -1374,7 +1384,7 @@
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}</strong>
                 <div class="muted">${item.date} · 供应商 ${escapeHtml(item.supplier)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
@@ -1416,7 +1426,7 @@
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}</strong>
                 <div class="muted">${item.date} · ${escapeHtml(item.payMethod)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
@@ -1434,7 +1444,7 @@
     function renderInventory() {
       refs.inventoryTable.innerHTML = state.products.length ? state.products.map(item => `
         <tr>
-          <td><strong>${escapeHtml(item.name)}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
+          <td><strong>${escapeHtml(displayProductName(item))}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
           <td>${item.stock}</td>
           <td>${item.threshold}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
@@ -1447,7 +1457,7 @@
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(product ? product.name : '未知商品')}</strong>
+                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}</strong>
                 <div class="muted">${item.date} · ${escapeHtml(item.reason)}</div>
               </div>
               <span class="tag">${item.before} → ${item.after}</span>
@@ -1544,6 +1554,7 @@
       refs.productFormTitle.textContent = '新增商品';
       state.tempProductPhoto = '';
       refs.productPhotoPreview.innerHTML = '';
+      refs.productSpec.value = '';
     }
 
     function editProduct(id) {
@@ -1551,6 +1562,7 @@
       if (!product) return;
       refs.productId.value = product.id;
       refs.productName.value = product.name;
+      refs.productSpec.value = product.spec || '';
       refs.productCategory.value = product.category;
       refs.productSku.value = product.sku;
       refs.productCost.value = product.costPrice;
@@ -1743,6 +1755,7 @@
       const payload = {
         id: refs.productId.value || `p-${Date.now()}`,
         name: refs.productName.value.trim(),
+        spec: refs.productSpec.value.trim(),
         category: refs.productCategory.value.trim(),
         sku: refs.productSku.value.trim(),
         costPrice: Number(refs.productCost.value || 0),
