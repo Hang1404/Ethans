@@ -1009,7 +1009,20 @@
 
     function exportData() {
       const payload = {
-        products: state.products,
+        products: state.products.map(p => ({
+          id: p.id,
+          name: p.name,
+          spec: p.spec || '',
+          category: p.category,
+          sku: p.sku,
+          costPrice: p.costPrice,
+          salePrice: p.salePrice,
+          stock: p.stock,
+          threshold: p.threshold,
+          photo: p.photo,
+          note: p.note,
+          createdAt: p.createdAt
+        })),
         purchases: state.purchases,
         sales: state.sales,
         stockAdjustments: state.stockAdjustments,
@@ -1043,7 +1056,20 @@
           title: '导入备份',
           body: '导入会覆盖当前设备上的全部数据（商品、进货、销售、盘点、操作日志），确定要继续吗？',
           onConfirm: () => {
-            state.products = parsed.products || [];
+            state.products = (parsed.products || []).map(p => ({
+              id: p.id,
+              name: p.name,
+              spec: p.spec || '',
+              category: p.category,
+              sku: p.sku,
+              costPrice: p.costPrice,
+              salePrice: p.salePrice,
+              stock: p.stock,
+              threshold: p.threshold,
+              photo: p.photo,
+              note: p.note,
+              createdAt: p.createdAt
+            }));
             state.purchases = parsed.purchases || [];
             state.sales = parsed.sales || [];
             state.stockAdjustments = parsed.stockAdjustments || [];
