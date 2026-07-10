@@ -379,6 +379,22 @@
                   <input id="productCategory" required />
                 </div>
                 <div class="form-group">
+                  <label>单位（例如：个 / 瓶）</label>
+                  <input id="productUnit" placeholder="例如：个、瓶、包，留空表示未指定" />
+                </div>
+                <div class="form-group">
+                  <label>大单位（可选）</label>
+                  <input id="productBigUnit" placeholder="例如：箱（可选）" />
+                </div>
+                <div class="form-group">
+                  <label>小单位（可选）</label>
+                  <input id="productSmallUnit" placeholder="例如：瓶（可选）" />
+                </div>
+                <div class="form-group">
+                  <label>换算关系（1 大 = 多少 小）</label>
+                  <input id="productUnitRatio" type="number" min="1" step="1" placeholder="例如：12" />
+                </div>
+                <div class="form-group">
                   <label>条码/编码</label>
                   <input id="productSku" required />
                 </div>
@@ -443,7 +459,7 @@
                 </div>
                 <div class="form-group">
                   <label>数量</label>
-                  <input id="purchaseQty" type="number" min="1" required />
+                  <div style="display:flex; align-items:center; gap:8px;"><input id="purchaseQty" type="number" min="1" required style="flex:1;" /><div class="muted" id="purchaseUnitDisplay"></div></div>
                 </div>
                 <div class="form-group">
                   <label>进价</label>
@@ -522,7 +538,7 @@
                 </div>
                 <div class="form-group">
                   <label>数量</label>
-                  <input id="saleQty" type="number" min="1" required />
+                  <div style="display:flex; align-items:center; gap:8px;"><input id="saleQty" type="number" min="1" required style="flex:1;" /><div class="muted" id="saleUnitDisplay"></div></div>
                 </div>
                 <div class="form-group">
                   <label>售价</label>
@@ -776,6 +792,10 @@
       productCategory: document.getElementById('productCategory'),
       productSku: document.getElementById('productSku'),
       productSpec: document.getElementById('productSpec'),
+      productUnit: document.getElementById('productUnit'),
+      productBigUnit: document.getElementById('productBigUnit'),
+      productSmallUnit: document.getElementById('productSmallUnit'),
+      productUnitRatio: document.getElementById('productUnitRatio'),
       productCost: document.getElementById('productCost'),
       productPrice: document.getElementById('productPrice'),
       productStock: document.getElementById('productStock'),
@@ -784,6 +804,8 @@
       productPhotoInput: document.getElementById('productPhotoInput'),
       productPhotoPreview: document.getElementById('productPhotoPreview'),
       cancelProductEdit: document.getElementById('cancelProductEdit'),
+      purchaseUnitDisplay: document.getElementById('purchaseUnitDisplay'),
+      saleUnitDisplay: document.getElementById('saleUnitDisplay'),
       purchaseForm: document.getElementById('purchaseForm'),
       purchaseEditId: document.getElementById('purchaseEditId'),
       purchaseDate: document.getElementById('purchaseDate'),
@@ -891,9 +913,9 @@
 
     function seedData() {
       state.products = [
-        { id: 'p1', name: '可口可乐', spec: '330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
-        { id: 'p2', name: '脉动', spec: '青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
-        { id: 'p3', name: '卫龙', spec: '辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
+        { id: 'p1', name: '可口可乐', spec: '330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, unit: '瓶', bigUnit: '', smallUnit: '瓶', unitRatio: 1, photo: '', note: '热销单品', createdAt: '2026-06-01' },
+        { id: 'p2', name: '脉动', spec: '青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, unit: '瓶', bigUnit: '', smallUnit: '瓶', unitRatio: 1, photo: '', note: '周末补货', createdAt: '2026-06-02' },
+        { id: 'p3', name: '卫龙', spec: '辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, unit: '包', bigUnit: '', smallUnit: '包', unitRatio: 1, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
       ];
       state.purchases = [
         { id: 'r1', date: todayString(), supplier: '天天批发', productId: 'p1', qty: 30, costPrice: 2.8, total: 84, receiptPhotos: [], note: '周初补货' },
@@ -924,6 +946,14 @@
     function displayProductName(product) {
       if (!product) return '';
       return `${product.name || ''}${product.spec ? ' · ' + product.spec : ''}`;
+    }
+
+    function getProductUnitDisplay(product) {
+      if (!product) return '';
+      if (product.bigUnit && product.smallUnit && product.unitRatio && Number(product.unitRatio) > 1) {
+        return product.smallUnit ? `${product.smallUnit}（1 ${product.bigUnit} = ${product.unitRatio} ${product.smallUnit}）` : product.bigUnit || '';
+      }
+      return product.unit || product.smallUnit || product.bigUnit || '';
     }
 
     function formatMoney(num) {
@@ -1013,6 +1043,10 @@
           id: p.id,
           name: p.name,
           spec: p.spec || '',
+          unit: p.unit || '',
+          bigUnit: p.bigUnit || '',
+          smallUnit: p.smallUnit || '',
+          unitRatio: p.unitRatio || '',
           category: p.category,
           sku: p.sku,
           costPrice: p.costPrice,
@@ -1060,6 +1094,10 @@
               id: p.id,
               name: p.name,
               spec: p.spec || '',
+              unit: p.unit || '',
+              bigUnit: p.bigUnit || '',
+              smallUnit: p.smallUnit || '',
+              unitRatio: p.unitRatio || '',
               category: p.category,
               sku: p.sku,
               costPrice: p.costPrice,
@@ -1286,7 +1324,7 @@
     }
 
     function renderSelectOptions() {
-      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${escapeHtml(displayProductName(item))}</option>`).join('');
+      const options = state.products.map(item => `<option value="${item.id}" ${item.stock <= item.threshold ? 'style="color:#c9463c"' : ''}>${escapeHtml(displayProductName(item))}${item.unit ? ' · ' + escapeHtml(item.unit) : ''}</option>`).join('');
       const prevPurchase = refs.purchaseProduct.value;
       const prevSale = refs.saleProduct.value;
       const prevAdjust = refs.adjustProduct.value;
@@ -1406,11 +1444,12 @@
         : '<div class="empty-state"><strong>还没有进货记录</strong>先登记一次，库存就会慢慢长起来。</div>';
       refs.purchaseList.innerHTML = filtered.length ? filtered.slice().reverse().map(item => {
         const product = getProductById(item.productId);
+        const unitText = product ? (product.unit || product.smallUnit || '') : '';
         return `
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}</strong>
+                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}${unitText ? ' · ' + escapeHtml(unitText) : ''}</strong>
                 <div class="muted">${item.date} · 供应商 ${escapeHtml(item.supplier)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
@@ -1448,11 +1487,12 @@
         : '<div class="empty-state"><strong>还没有销售记录</strong>先登记一单，库存就会有变化。</div>';
       refs.saleList.innerHTML = filtered.length ? filtered.slice().reverse().map(item => {
         const product = getProductById(item.productId);
+        const unitText = product ? (product.unit || product.smallUnit || '') : '';
         return `
           <div class="item-card">
             <div class="list-row">
               <div>
-                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}</strong>
+                <strong>${escapeHtml(product ? displayProductName(product) : '未知商品')}${unitText ? ' · ' + escapeHtml(unitText) : ''}</strong>
                 <div class="muted">${item.date} · ${escapeHtml(item.payMethod)}</div>
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
@@ -1470,7 +1510,7 @@
     function renderInventory() {
       refs.inventoryTable.innerHTML = state.products.length ? state.products.map(item => `
         <tr>
-          <td><strong>${escapeHtml(displayProductName(item))}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
+          <td><strong>${escapeHtml(displayProductName(item))}${item.unit ? ' · ' + escapeHtml(item.unit) : ''}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
           <td>${item.stock}</td>
           <td>${item.threshold}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
@@ -1563,6 +1603,11 @@
       renderInventory();
       renderFinance();
       renderOperationLog();
+      // update unit display for current selected product in forms
+      const currentPurchaseProduct = getProductById(refs.purchaseProduct.value);
+      refs.purchaseUnitDisplay.textContent = currentPurchaseProduct ? getProductUnitDisplay(currentPurchaseProduct) : '';
+      const currentSaleProduct = getProductById(refs.saleProduct.value);
+      refs.saleUnitDisplay.textContent = currentSaleProduct ? getProductUnitDisplay(currentSaleProduct) : '';
     }
 
     function switchSection(section) {
@@ -1782,6 +1827,10 @@
         id: refs.productId.value || `p-${Date.now()}`,
         name: refs.productName.value.trim(),
         spec: refs.productSpec.value.trim(),
+        unit: refs.productUnit.value.trim(),
+        bigUnit: refs.productBigUnit.value.trim(),
+        smallUnit: refs.productSmallUnit.value.trim(),
+        unitRatio: Number(refs.productUnitRatio.value) || 1,
         category: refs.productCategory.value.trim(),
         sku: refs.productSku.value.trim(),
         costPrice: Number(refs.productCost.value || 0),
@@ -1856,6 +1905,7 @@
             supplier: refs.purchaseSupplier.value.trim(),
             productId: refs.purchaseProduct.value,
             qty,
+            unit: (product && (product.unit || product.smallUnit || '')) || '',
             costPrice,
             total,
             receiptPhotos: state.tempPurchasePhotos.slice(),
@@ -1941,6 +1991,7 @@
           date: refs.saleDate.value,
           productId: refs.saleProduct.value,
           qty,
+          unit: (product && (product.unit || product.smallUnit || '')) || '',
           salePrice: Number(refs.salePrice.value || 0),
           total: Number(refs.saleTotal.value || 0),
           payMethod: refs.salePayMethod.value,
@@ -2034,9 +2085,14 @@
       const price = Number(refs.salePrice.value || 0);
       refs.saleTotal.value = (qty * price).toFixed(2);
     });
+    refs.purchaseProduct.addEventListener('change', () => {
+      const product = getProductById(refs.purchaseProduct.value);
+      refs.purchaseUnitDisplay.textContent = product ? getProductUnitDisplay(product) : '';
+    });
     refs.saleProduct.addEventListener('change', () => {
       const product = getProductById(refs.saleProduct.value);
       if (!product) return;
+      refs.saleUnitDisplay.textContent = getProductUnitDisplay(product);
       refs.salePrice.value = product.salePrice;
       const qty = Number(refs.saleQty.value || 0);
       const price = Number(refs.salePrice.value || 0);
