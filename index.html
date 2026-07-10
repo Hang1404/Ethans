@@ -201,30 +201,6 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    .auth-screen {
-      position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px;
-      background: radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 45%),
-                  radial-gradient(circle at 85% 0%, #ffe9d1 0%, transparent 40%),
-                  linear-gradient(135deg, #fcf4e8 0%, var(--bg) 60%, #f3e6d4 100%);
-    }
-    .auth-card {
-      width: min(380px, 100%); background: rgba(255,255,255,0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255,255,255,0.6); border-radius: 22px; padding: 28px; box-shadow: var(--shadow-hover);
-      animation: scaleIn .3s var(--ease);
-    }
-    .auth-card h1 { margin: 0 0 4px; font-size: 22px; }
-    .auth-card > p.muted { margin: 0 0 18px; }
-    .auth-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 999px; }
-    .auth-tab { flex: 1; border: 0; background: transparent; padding: 8px 10px; border-radius: 999px; cursor: pointer; font-weight: 700; color: var(--muted); transition: background .25s var(--ease), color .25s var(--ease); }
-    .auth-tab.active { background: white; color: var(--accent); box-shadow: var(--shadow); }
-    .auth-form { display: flex; flex-direction: column; gap: 12px; }
-    .auth-form.hidden { display: none; }
-    .auth-error { color: var(--warning); font-size: 13px; margin-top: 12px; background: rgba(248,216,210,0.5); padding: 10px 12px; border-radius: 12px; }
-    .auth-error.hidden { display: none; }
-    .user-badge { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
-    .user-badge strong { font-size: 14px; }
-    #appRoot.hidden { display: none; }
-
     @media (max-width: 900px) {
       .app { grid-template-columns: 1fr; }
       .sidebar { position: fixed; left: 0; right: 0; bottom: 0; top: auto; flex-direction: row; justify-content: space-around; padding: 10px 8px; z-index: 800; border-top: 1px solid rgba(255,255,255,.12); }
@@ -238,46 +214,7 @@
   </style>
 </head>
 <body>
-  <div id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <h1>小店记账本</h1>
-      <p class="muted">登录账号，多人协同管理这家店</p>
-      <div class="auth-tabs">
-        <button type="button" class="auth-tab active" data-tab="login">登录</button>
-        <button type="button" class="auth-tab" data-tab="register">注册新账号</button>
-      </div>
-      <form id="loginForm" class="auth-form">
-        <div class="form-group full">
-          <label>邮箱</label>
-          <input id="loginEmail" type="email" required autocomplete="username" />
-        </div>
-        <div class="form-group full">
-          <label>密码</label>
-          <input id="loginPassword" type="password" required autocomplete="current-password" />
-        </div>
-        <button class="btn btn-primary" type="submit" style="width:100%;">登录</button>
-      </form>
-      <form id="registerForm" class="auth-form hidden">
-        <div class="form-group full">
-          <label>姓名</label>
-          <input id="registerName" required />
-        </div>
-        <div class="form-group full">
-          <label>邮箱</label>
-          <input id="registerEmail" type="email" required autocomplete="username" />
-        </div>
-        <div class="form-group full">
-          <label>设置密码（至少 6 位）</label>
-          <input id="registerPassword" type="password" required minlength="6" autocomplete="new-password" />
-        </div>
-        <button class="btn btn-primary" type="submit" style="width:100%;">注册</button>
-        <p class="muted" style="font-size:12px; margin:0;">新注册的账号默认是"员工"权限，需要老板去 Supabase 后台 Table Editor 里手动升级成店长/老板。</p>
-      </form>
-      <p id="authError" class="auth-error hidden"></p>
-    </div>
-  </div>
-
-  <div class="app hidden" id="appRoot">
+  <div class="app" id="appRoot">
     <aside class="sidebar">
       <div class="brand">
         <h1>小店记账本</h1>
@@ -288,7 +225,7 @@
       <button class="nav-btn" data-target="purchase">📦 进货</button>
       <button class="nav-btn" data-target="sale">💵 销售</button>
       <button class="nav-btn" data-target="inventory">📋 库存台账</button>
-      <button class="nav-btn" data-target="finance" data-roles="boss,manager">🧾 收支流水</button>
+      <button class="nav-btn" data-target="finance">🧾 收支流水</button>
     </aside>
 
     <main class="main">
@@ -298,11 +235,10 @@
           <div class="meta" id="pageHint">看看今天的生意和库存情况。</div>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
-          <div class="user-badge">
-            <strong id="currentUserName">-</strong>
-            <span class="tag" id="currentUserRole">-</span>
+          <div class="form-group" style="gap:2px;">
+            <label for="operatorName" style="font-size:12px;">操作人 <span style="color:var(--warning);">*</span></label>
+            <input id="operatorName" placeholder="必填" required style="padding:8px 10px; width:140px;" />
           </div>
-          <button class="btn btn-ghost" id="logoutBtn" type="button">退出登录</button>
           <button class="btn btn-secondary mobile-toggle" id="mobileMenuBtn">☰ 菜单</button>
         </div>
       </div>
@@ -348,20 +284,22 @@
           </div>
         </div>
 
-        <div class="panel" style="margin-top: 16px;" data-roles="boss,manager">
+        <div class="panel" style="margin-top: 16px;">
           <div class="section-title">
             <div>
               <h3>操作日志</h3>
-              <p>每一次改动都会留下痕迹，方便对账和回看。数据保存在云端，团队成员登录后都能看到。</p>
+              <p>每一次改动都会留下痕迹，方便对账和回看。数据只存在本设备浏览器里，建议定期导出备份。</p>
             </div>
             <div class="chip-row">
               <select id="exportFormatSelect" style="border-radius:999px; padding:8px 14px; cursor:pointer; font-weight:700;">
                 <option value="" selected disabled>导出 ▾</option>
-                <option value="json">导出快照备份（JSON，仅供留档查看）</option>
+                <option value="json">导出备份（JSON，可用于导入还原）</option>
                 <option value="csv">导出 Excel（CSV）</option>
                 <option value="pdf">导出 PDF</option>
               </select>
-              <button class="btn btn-danger" id="clearLogBtn" type="button" data-roles="boss">清空日志</button>
+              <button class="btn btn-ghost" id="importDataBtn" type="button">导入备份</button>
+              <input type="file" id="importDataInput" accept="application/json" class="hidden" />
+              <button class="btn btn-danger" id="clearLogBtn" type="button">清空日志</button>
             </div>
           </div>
           <div class="table-wrap">
@@ -418,7 +356,7 @@
             </div>
           </div>
 
-          <div class="panel" data-roles="boss,manager">
+          <div class="panel">
             <div class="section-title">
               <div>
                 <h3 id="productFormTitle">新增商品</h3>
@@ -671,7 +609,7 @@
             </div>
           </div>
 
-          <div class="panel" data-roles="boss,manager">
+          <div class="panel">
             <div class="section-title">
               <div>
                 <h3>盘点调整</h3>
@@ -785,24 +723,15 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ============================================================
-    // 云端连接配置（Supabase）
-    // ============================================================
-    const SUPABASE_URL = 'https://lhfenfukqonnefnxkhnk.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_wy3uoAY-65H3BmfE78eurg_7xJ2QGM-';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const roleLabels = { boss: '老板', manager: '店长', staff: '员工' };
-
+    const STORAGE_KEY = 'retail-demo-v1';
+    const OPERATOR_KEY = 'retail-demo-operator-v1';
     const state = {
       products: [],
       purchases: [],
       sales: [],
       stockAdjustments: [],
       operationLogs: [],
-      profilesById: {},
-      profile: null,
       currentSection: 'overview',
       currentRange: 'day',
       pendingDelete: null,
@@ -824,21 +753,10 @@
       warningList: document.getElementById('warningList'),
       recentList: document.getElementById('recentList'),
       operationLogList: document.getElementById('operationLogList'),
-      authScreen: document.getElementById('authScreen'),
-      appRoot: document.getElementById('appRoot'),
-      loginForm: document.getElementById('loginForm'),
-      loginEmail: document.getElementById('loginEmail'),
-      loginPassword: document.getElementById('loginPassword'),
-      registerForm: document.getElementById('registerForm'),
-      registerName: document.getElementById('registerName'),
-      registerEmail: document.getElementById('registerEmail'),
-      registerPassword: document.getElementById('registerPassword'),
-      authError: document.getElementById('authError'),
-      authTabs: document.querySelectorAll('.auth-tab'),
-      currentUserName: document.getElementById('currentUserName'),
-      currentUserRole: document.getElementById('currentUserRole'),
-      logoutBtn: document.getElementById('logoutBtn'),
+      operatorName: document.getElementById('operatorName'),
       exportFormatSelect: document.getElementById('exportFormatSelect'),
+      importDataBtn: document.getElementById('importDataBtn'),
+      importDataInput: document.getElementById('importDataInput'),
       clearLogBtn: document.getElementById('clearLogBtn'),
       todaySales: document.getElementById('todaySales'),
       todayOrders: document.getElementById('todayOrders'),
@@ -930,247 +848,60 @@
       finance: { title: '收支流水', hint: '收入和支出一起看，心里更稳。' }
     };
 
-    // ============================================================
-    // 数据库行 <-> 页面内部对象 的字段映射（数据库是 snake_case，页面沿用原来的 camelCase）
-    // ============================================================
-    function mapProductFromDb(row) {
-      return {
-        id: row.id, name: row.name, category: row.category, sku: row.sku,
-        costPrice: Number(row.cost_price || 0), salePrice: Number(row.sale_price || 0),
-        stock: Number(row.stock || 0), threshold: Number(row.threshold || 0),
-        photo: row.photo_url || '', note: row.note || '', createdAt: row.created_at
-      };
-    }
-    function mapPurchaseFromDb(row) {
-      return {
-        id: row.id, date: row.date, supplier: row.supplier, productId: row.product_id,
-        qty: Number(row.qty || 0), costPrice: Number(row.cost_price || 0), total: Number(row.total || 0),
-        receiptPhotos: row.receipt_photos || [], note: row.note || ''
-      };
-    }
-    function mapSaleFromDb(row) {
-      return {
-        id: row.id, date: row.date, productId: row.product_id, qty: Number(row.qty || 0),
-        salePrice: Number(row.sale_price || 0), total: Number(row.total || 0), payMethod: row.pay_method,
-        receiptPhoto: row.receipt_photo || '', note: row.note || ''
-      };
-    }
-    function mapAdjustmentFromDb(row) {
-      return {
-        id: row.id, date: row.date, productId: row.product_id,
-        before: Number(row.before_qty || 0), after: Number(row.after_qty || 0), reason: row.reason || ''
-      };
-    }
-    function mapLogFromDb(row) {
-      const d = new Date(row.occurred_at);
-      const pad = (n) => String(n).padStart(2, '0');
-      return {
-        id: row.id,
-        date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
-        time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
-        operator: state.profilesById[row.operator_id] || '未知',
-        action: row.action, target: row.target || '', detail: row.detail || ''
-      };
-    }
-
-    function friendlyDbError(error) {
-      const msg = (error && error.message) || '';
-      if (msg.includes('stock_non_negative')) return '库存不够了，操作失败（可能有其他人刚改过库存）';
-      if (msg.includes('duplicate key') && msg.includes('sku')) return '条码/编码重复了，换一个吧';
-      if (msg.includes('row-level security') || msg.includes('permission')) return '你的账号权限不够做这个操作';
-      return msg || '保存失败，请检查网络后重试';
-    }
-
-    async function fetchAllData() {
-      const [productsRes, purchasesRes, salesRes, adjustmentsRes, profilesRes, logsRes] = await Promise.all([
-        sb.from('products').select('*').order('created_at'),
-        sb.from('purchases').select('*').order('date'),
-        sb.from('sales').select('*').order('date'),
-        sb.from('stock_adjustments').select('*').order('date'),
-        sb.from('profiles').select('*'),
-        sb.from('operation_logs').select('*').order('occurred_at', { ascending: false }).limit(200)
-      ]);
-      state.profilesById = {};
-      (profilesRes.data || []).forEach((p) => { state.profilesById[p.id] = p.display_name; });
-      state.products = (productsRes.data || []).map(mapProductFromDb);
-      state.purchases = (purchasesRes.data || []).map(mapPurchaseFromDb);
-      state.sales = (salesRes.data || []).map(mapSaleFromDb);
-      state.stockAdjustments = (adjustmentsRes.data || []).map(mapAdjustmentFromDb);
-      state.operationLogs = (logsRes.data || []).map(mapLogFromDb).reverse();
-    }
-
-    async function adjustStock(productId, delta) {
-      const { data, error } = await sb.rpc('adjust_stock', { p_product_id: productId, p_delta: delta });
-      if (error) throw error;
-      return data;
-    }
-
-    async function logOperation(action, target, detail) {
-      try {
-        await sb.from('operation_logs').insert({
-          operator_id: state.profile ? state.profile.id : null,
-          action, target, detail
-        });
-      } catch (error) {
-        console.error('写操作日志失败', error);
-      }
-    }
-
-    // ============================================================
-    // 角色权限
-    // ============================================================
-    function canManage() {
-      return !!state.profile && (state.profile.role === 'boss' || state.profile.role === 'manager');
-    }
-    function isBoss() {
-      return !!state.profile && state.profile.role === 'boss';
-    }
-    function applyRoleVisibility() {
-      const role = state.profile ? state.profile.role : null;
-      document.querySelectorAll('[data-roles]').forEach((el) => {
-        const allowed = el.dataset.roles.split(',');
-        el.classList.toggle('hidden', !role || !allowed.includes(role));
-      });
-    }
-
-    // ============================================================
-    // 登录 / 注册 / 登出
-    // ============================================================
-    function showAuthError(message) {
-      refs.authError.textContent = message;
-      refs.authError.classList.remove('hidden');
-    }
-    function clearAuthError() {
-      refs.authError.classList.add('hidden');
-      refs.authError.textContent = '';
-    }
-    function translateAuthError(error) {
-      const msg = (error && error.message) || '';
-      if (msg.includes('Invalid login credentials')) return '邮箱或密码不对，请再确认一下';
-      if (msg.toLowerCase().includes('already registered')) return '这个邮箱已经注册过了，直接登录就行';
-      if (msg.includes('Password should be at least')) return '密码至少需要 6 位';
-      if (msg.includes('Unable to validate email address')) return '邮箱格式不对';
-      return msg || '出错了，请重试';
-    }
-
-    let realtimeChannel = null;
-    let realtimeDebounceTimer = null;
-    function scheduleRealtimeRefresh() {
-      clearTimeout(realtimeDebounceTimer);
-      realtimeDebounceTimer = setTimeout(async () => {
-        await fetchAllData();
-        renderAll();
-      }, 400);
-    }
-    function subscribeRealtime() {
-      if (realtimeChannel) return;
-      realtimeChannel = sb.channel('shop-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, scheduleRealtimeRefresh)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'purchases' }, scheduleRealtimeRefresh)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, scheduleRealtimeRefresh)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_adjustments' }, scheduleRealtimeRefresh)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'operation_logs' }, scheduleRealtimeRefresh)
-        .subscribe();
-    }
-    function unsubscribeRealtime() {
-      if (realtimeChannel) {
-        sb.removeChannel(realtimeChannel);
-        realtimeChannel = null;
-      }
-    }
-
-    async function onLoggedIn(session) {
-      const userId = session.user.id;
-      let profileRow = null;
-      for (let attempt = 0; attempt < 3 && !profileRow; attempt++) {
-        const { data } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
-        profileRow = data;
-        if (!profileRow) await new Promise((resolve) => setTimeout(resolve, 600));
-      }
-      if (!profileRow) {
-        showAuthError('登录成功，但读取账号信息失败，请刷新页面重试');
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        seedData();
         return;
       }
-      state.profile = { id: profileRow.id, displayName: profileRow.display_name, role: profileRow.role };
-      refs.authScreen.classList.add('hidden');
-      refs.appRoot.classList.remove('hidden');
-      refs.currentUserName.textContent = state.profile.displayName;
-      refs.currentUserRole.textContent = roleLabels[state.profile.role] || state.profile.role;
-      applyRoleVisibility();
-      await fetchAllData();
-      setDefaultDates();
-      renderAll();
-      switchSection('overview');
-      subscribeRealtime();
-    }
-
-    function onLoggedOut() {
-      state.profile = null;
-      state.products = [];
-      state.purchases = [];
-      state.sales = [];
-      state.stockAdjustments = [];
-      state.operationLogs = [];
-      state.profilesById = {};
-      unsubscribeRealtime();
-      refs.appRoot.classList.add('hidden');
-      refs.authScreen.classList.remove('hidden');
-      refs.loginForm.reset();
-      refs.registerForm.reset();
-      clearAuthError();
-    }
-
-    async function initSession() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        await onLoggedIn(session);
+      try {
+        const parsed = JSON.parse(raw);
+        state.products = parsed.products || [];
+        state.purchases = parsed.purchases || [];
+        state.sales = parsed.sales || [];
+        state.stockAdjustments = parsed.stockAdjustments || [];
+        state.operationLogs = parsed.operationLogs || [];
+      } catch (error) {
+        console.error(error);
+        seedData();
       }
-      sb.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session && !state.profile) {
-          onLoggedIn(session);
-        } else if (event === 'SIGNED_OUT') {
-          onLoggedOut();
-        }
-      });
     }
 
-    refs.authTabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        refs.authTabs.forEach((t) => t.classList.toggle('active', t === tab));
-        clearAuthError();
-        if (tab.dataset.tab === 'login') {
-          refs.loginForm.classList.remove('hidden');
-          refs.registerForm.classList.add('hidden');
-        } else {
-          refs.loginForm.classList.add('hidden');
-          refs.registerForm.classList.remove('hidden');
-        }
-      });
-    });
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          products: state.products,
+          purchases: state.purchases,
+          sales: state.sales,
+          stockAdjustments: state.stockAdjustments,
+          operationLogs: state.operationLogs
+        }));
+        return true;
+      } catch (error) {
+        console.error(error);
+        showToast('保存失败，本地存储空间可能已满（照片太多），建议先导出备份、清理部分照片');
+        return false;
+      }
+    }
 
-    refs.loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      clearAuthError();
-      const email = refs.loginEmail.value.trim();
-      const password = refs.loginPassword.value;
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) showAuthError(translateAuthError(error));
-    });
-
-    refs.registerForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      clearAuthError();
-      const name = refs.registerName.value.trim();
-      const email = refs.registerEmail.value.trim();
-      const password = refs.registerPassword.value;
-      const { error } = await sb.auth.signUp({ email, password, options: { data: { display_name: name } } });
-      if (error) { showAuthError(translateAuthError(error)); return; }
-      showToast('注册成功，如果项目开启了邮箱验证，请先去邮箱点确认链接再登录');
-    });
-
-    refs.logoutBtn.addEventListener('click', async () => {
-      await sb.auth.signOut();
-    });
+    function seedData() {
+      state.products = [
+        { id: 'p1', name: '可口可乐 330ml', category: '饮料', sku: 'SKU-001', costPrice: 2.8, salePrice: 4.5, stock: 24, threshold: 10, photo: '', note: '热销单品', createdAt: '2026-06-01' },
+        { id: 'p2', name: '脉动青柠', category: '饮料', sku: 'SKU-002', costPrice: 3.0, salePrice: 4.8, stock: 6, threshold: 8, photo: '', note: '周末补货', createdAt: '2026-06-02' },
+        { id: 'p3', name: '卫龙辣条', category: '零食', sku: 'SKU-003', costPrice: 1.2, salePrice: 2.5, stock: 18, threshold: 12, photo: '', note: '陈列位热卖', createdAt: '2026-06-03' }
+      ];
+      state.purchases = [
+        { id: 'r1', date: todayString(), supplier: '天天批发', productId: 'p1', qty: 30, costPrice: 2.8, total: 84, receiptPhotos: [], note: '周初补货' },
+        { id: 'r2', date: todayString(), supplier: '食杂仓', productId: 'p3', qty: 20, costPrice: 1.2, total: 24, receiptPhotos: [], note: '店里上架' }
+      ];
+      state.sales = [
+        { id: 's1', date: todayString(), productId: 'p1', qty: 6, salePrice: 4.5, total: 27, payMethod: '微信', receiptPhoto: '', note: '连带饮料' }
+      ];
+      state.stockAdjustments = [
+        { id: 'a1', date: todayString(), productId: 'p2', before: 10, after: 6, reason: '盘点后发现少了 4 盒' }
+      ];
+      saveData();
+    }
 
     function todayString() {
       return nowDateString();
@@ -1204,6 +935,34 @@
       const d = new Date();
       const pad = (n) => String(n).padStart(2, '0');
       return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function getOperatorName() {
+      return refs.operatorName.value.trim() || '未填写';
+    }
+
+    function requireOperator() {
+      if (!refs.operatorName.value.trim()) {
+        showToast('请先在右上角填写操作人姓名，才能保存');
+        refs.operatorName.focus();
+        return false;
+      }
+      return true;
+    }
+
+    function logOperation(action, target, detail) {
+      state.operationLogs.push({
+        id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        date: nowDateString(),
+        time: nowTimeString(),
+        operator: getOperatorName(),
+        action,
+        target,
+        detail
+      });
+      if (state.operationLogs.length > 200) {
+        state.operationLogs = state.operationLogs.slice(-200);
+      }
     }
 
     function renderOperationLog() {
@@ -1257,6 +1016,36 @@
       a.remove();
       URL.revokeObjectURL(url);
       showToast('备份已导出');
+    }
+
+    function importDataFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let parsed;
+        try {
+          parsed = JSON.parse(e.target.result);
+        } catch (error) {
+          console.error(error);
+          showToast('导入失败，文件不是有效的备份格式');
+          return;
+        }
+        openConfirm({
+          title: '导入备份',
+          body: '导入会覆盖当前设备上的全部数据（商品、进货、销售、盘点、操作日志），确定要继续吗？',
+          onConfirm: () => {
+            state.products = parsed.products || [];
+            state.purchases = parsed.purchases || [];
+            state.sales = parsed.sales || [];
+            state.stockAdjustments = parsed.stockAdjustments || [];
+            state.operationLogs = parsed.operationLogs || [];
+            saveData();
+            renderAll();
+            closeConfirm();
+            showToast('备份已导入');
+          }
+        });
+      };
+      reader.readAsText(file);
     }
 
     function csvEscape(field) {
@@ -1337,10 +1126,9 @@
       openConfirm({
         title: '清空操作日志',
         body: `确定要清空全部 ${state.operationLogs.length} 条操作日志吗？清空后无法恢复，建议先导出备份。此操作不影响商品、进货、销售等业务数据。`,
-        onConfirm: async () => {
-          const { error } = await sb.from('operation_logs').delete().not('id', 'is', null);
-          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
+        onConfirm: () => {
           state.operationLogs = [];
+          saveData();
           renderOperationLog();
           closeConfirm();
           showToast('操作日志已清空');
@@ -1377,7 +1165,7 @@
       refs.imageModalImg.removeAttribute('src');
     }
 
-    function compressImageToBlob(file) {
+    function compressImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -1389,7 +1177,7 @@
             canvas.height = img.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -1397,15 +1185,6 @@
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-    }
-
-    async function uploadPhoto(file) {
-      const blob = await compressImageToBlob(file);
-      const path = `${state.profile.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-      const { error } = await sb.storage.from('shop-photos').upload(path, blob, { contentType: 'image/jpeg' });
-      if (error) throw error;
-      const { data } = sb.storage.from('shop-photos').getPublicUrl(path);
-      return data.publicUrl;
     }
 
     async function handlePhotoSelection(fileList, targetArray, previewEl, kind, limit = 6) {
@@ -1417,16 +1196,11 @@
         return;
       }
       const selected = files.slice(0, remaining);
-      showToast('照片上传中…');
-      try {
-        for (const file of selected) {
-          const url = await uploadPhoto(file);
-          targetArray.push(url);
-        }
-        renderPhotoPreview(previewEl, targetArray, kind);
-      } catch (error) {
-        showToast(friendlyDbError(error));
+      for (const file of selected) {
+        const dataUrl = await compressImage(file);
+        targetArray.push(dataUrl);
       }
+      renderPhotoPreview(previewEl, targetArray, kind);
     }
 
     function renderPhotoPreview(container, photos, kind) {
@@ -1466,6 +1240,13 @@
       refs.purchaseDate.value = today;
       refs.saleDate.value = today;
       refs.adjustDate.value = today;
+    }
+
+    function initOperatorName() {
+      refs.operatorName.value = localStorage.getItem(OPERATOR_KEY) || '';
+      refs.operatorName.addEventListener('input', () => {
+        localStorage.setItem(OPERATOR_KEY, refs.operatorName.value.trim());
+      });
     }
 
     function renderSelectOptions() {
@@ -1560,8 +1341,8 @@
           <td>${item.stock}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
           <td class="actions">
-            ${canManage() ? `<button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
-            <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>` : '<span class="muted">仅查看</span>'}
+            <button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
+            <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>
           </td>
         </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没找到合适的货</strong>换个关键词或分类再试一次吧。</div></td></tr>';
     }
@@ -1600,10 +1381,10 @@
             </div>
             <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 进价 ${formatMoney(item.costPrice || 0)}</div>
             ${item.receiptPhotos && item.receiptPhotos.length ? `<div class="photo-list">${item.receiptPhotos.map(photo => `<img class="thumb" src="${photo}" alt="凭证" onclick="window.openImageModal('${photo}')" />`).join('')}</div>` : ''}
-            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+            <div class="btn-row" style="margin-top:8px;">
               <button class="btn-link btn-secondary" onclick="editPurchase('${item.id}')">编辑</button>
               <button class="btn-link btn-danger" onclick="requestDeletePurchase('${item.id}')">删</button>
-            </div>` : ''}
+            </div>
           </div>`;
       }).join('') : emptyMessage;
     }
@@ -1642,10 +1423,10 @@
             </div>
             <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 售价 ${formatMoney(item.salePrice || 0)}</div>
             ${item.receiptPhoto ? `<div class="photo-list"><img class="thumb" src="${item.receiptPhoto}" alt="销售凭证" onclick="window.openImageModal('${item.receiptPhoto}')" /></div>` : ''}
-            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+            <div class="btn-row" style="margin-top:8px;">
               <button class="btn-link btn-secondary" onclick="editSale('${item.id}')">编辑</button>
               <button class="btn-link btn-danger" onclick="requestDeleteSale('${item.id}')">删</button>
-            </div>` : ''}
+            </div>
           </div>`;
       }).join('') : emptyMessage;
     }
@@ -1657,7 +1438,7 @@
           <td>${item.stock}</td>
           <td>${item.threshold}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
-          <td>${canManage() ? `<button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button>` : '<span class="muted">仅查看</span>'}</td>
+          <td><button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button></td>
         </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没有商品</strong>先新建一件货，台账才有内容。</div></td></tr>';
 
       refs.adjustmentList.innerHTML = state.stockAdjustments.length ? state.stockAdjustments.slice().reverse().map(item => {
@@ -1671,9 +1452,9 @@
               </div>
               <span class="tag">${item.before} → ${item.after}</span>
             </div>
-            ${canManage() ? `<div class="btn-row" style="margin-top:8px;">
+            <div class="btn-row" style="margin-top:8px;">
               <button class="btn-link btn-danger" onclick="requestDeleteAdjustment('${item.id}')">删</button>
-            </div>` : ''}
+            </div>
           </div>`;
       }).join('') : '<div class="empty-state"><strong>还没有盘点记录</strong>有时候手工校对一下，仓库更安心。</div>';
     }
@@ -1749,7 +1530,6 @@
     }
 
     function switchSection(section) {
-      if (section === 'finance' && !canManage()) section = 'overview';
       state.currentSection = section;
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === section));
       document.querySelectorAll('.view-section').forEach(el => el.classList.toggle('hidden', el.id !== section));
@@ -1787,6 +1567,7 @@
     function requestDeleteProduct(id) {
       const product = getProductById(id);
       if (!product) return;
+      if (!requireOperator()) return;
       const relatedCount = state.purchases.filter(item => item.productId === id).length
         + state.sales.filter(item => item.productId === id).length
         + state.stockAdjustments.filter(item => item.productId === id).length;
@@ -1794,11 +1575,13 @@
       openConfirm({
         title: '删除商品',
         body: `确定要把"${product.name}"从货架上移除吗${relatedHint}？`,
-        onConfirm: async () => {
-          const { error } = await sb.from('products').delete().eq('id', id);
-          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
-          await logOperation('删除商品', product.name, `删除前库存 ${product.stock}，进价 ${formatMoney(product.costPrice)}，售价 ${formatMoney(product.salePrice)}`);
-          await fetchAllData();
+        onConfirm: () => {
+          logOperation('删除商品', product.name, `删除前库存 ${product.stock}，进价 ${formatMoney(product.costPrice)}，售价 ${formatMoney(product.salePrice)}`);
+          state.products = state.products.filter(item => item.id !== id);
+          state.sales = state.sales.filter(item => item.productId !== id);
+          state.purchases = state.purchases.filter(item => item.productId !== id);
+          state.stockAdjustments = state.stockAdjustments.filter(item => item.productId !== id);
+          saveData();
           renderAll();
           showToast('商品已经移除了');
           closeConfirm();
@@ -1818,6 +1601,7 @@
     function requestDeletePurchase(id) {
       const purchase = state.purchases.find(item => item.id === id);
       if (!purchase) return;
+      if (!requireOperator()) return;
       const product = getProductById(purchase.productId);
       const productName = product ? product.name : '未知商品';
       const currentStock = product ? Number(product.stock || 0) : 0;
@@ -1830,19 +1614,14 @@
       openConfirm({
         title: '删除进货记录',
         body,
-        onConfirm: async () => {
-          try {
-            if (product) await adjustStock(product.id, -qty);
-            const { error } = await sb.from('purchases').delete().eq('id', id);
-            if (error) throw error;
-            await logOperation('删除进货', productName, `删除进货 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
-            await fetchAllData();
-            renderAll();
-            showToast('进货记录已删除，库存已同步');
-          } catch (error) {
-            showToast(friendlyDbError(error));
-          }
+        onConfirm: () => {
+          if (product) product.stock = afterStock;
+          state.purchases = state.purchases.filter(item => item.id !== id);
+          logOperation('删除进货', productName, `删除进货 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
+          saveData();
+          renderAll();
           closeConfirm();
+          showToast('进货记录已删除，库存已同步');
         }
       });
     }
@@ -1850,6 +1629,7 @@
     function requestDeleteSale(id) {
       const sale = state.sales.find(item => item.id === id);
       if (!sale) return;
+      if (!requireOperator()) return;
       const product = getProductById(sale.productId);
       const productName = product ? product.name : '未知商品';
       const currentStock = product ? Number(product.stock || 0) : 0;
@@ -1858,19 +1638,14 @@
       openConfirm({
         title: '删除销售记录',
         body: `确定要删除这条销售记录吗？删除后会把 ${qty} 件"${productName}"加回库存（当前 ${currentStock} → 删除后 ${afterStock}）。`,
-        onConfirm: async () => {
-          try {
-            if (product) await adjustStock(product.id, qty);
-            const { error } = await sb.from('sales').delete().eq('id', id);
-            if (error) throw error;
-            await logOperation('删除销售', productName, `删除销售 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
-            await fetchAllData();
-            renderAll();
-            showToast('销售记录已删除，库存已同步');
-          } catch (error) {
-            showToast(friendlyDbError(error));
-          }
+        onConfirm: () => {
+          if (product) product.stock = afterStock;
+          state.sales = state.sales.filter(item => item.id !== id);
+          logOperation('删除销售', productName, `删除销售 ${qty} 件，库存 ${currentStock} → ${afterStock}`);
+          saveData();
+          renderAll();
           closeConfirm();
+          showToast('销售记录已删除，库存已同步');
         }
       });
     }
@@ -1878,16 +1653,16 @@
     function requestDeleteAdjustment(id) {
       const adjustment = state.stockAdjustments.find(item => item.id === id);
       if (!adjustment) return;
+      if (!requireOperator()) return;
       const product = getProductById(adjustment.productId);
       const productName = product ? product.name : '未知商品';
       openConfirm({
         title: '删除盘点记录',
         body: '确定要删除这条盘点记录吗？这只是移除历史记录，不会改变当前库存数量。',
-        onConfirm: async () => {
-          const { error } = await sb.from('stock_adjustments').delete().eq('id', id);
-          if (error) { showToast(friendlyDbError(error)); closeConfirm(); return; }
-          await logOperation('删除盘点', productName, `删除盘点记录（${adjustment.before} → ${adjustment.after}）`);
-          await fetchAllData();
+        onConfirm: () => {
+          state.stockAdjustments = state.stockAdjustments.filter(item => item.id !== id);
+          logOperation('删除盘点', productName, `删除盘点记录（${adjustment.before} → ${adjustment.after}）`);
+          saveData();
           renderAll();
           closeConfirm();
           showToast('盘点记录已删除');
@@ -1962,67 +1737,53 @@
       event.currentTarget.textContent = willHide ? '☰ 显示菜单' : '✕ 收起菜单';
     });
 
-    refs.productForm.addEventListener('submit', async (event) => {
+    refs.productForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      if (!canManage()) { showToast('你的账号权限不能管理商品'); return; }
-      const editId = refs.productId.value;
-      const name = refs.productName.value.trim();
-      const category = refs.productCategory.value.trim();
-      const sku = refs.productSku.value.trim();
-      const costPrice = Number(refs.productCost.value || 0);
-      const salePrice = Number(refs.productPrice.value || 0);
-      const stock = Number(refs.productStock.value || 0);
-      const threshold = Number(refs.productThreshold.value || 0);
-      const note = refs.productNote.value.trim();
-      const photo = state.tempProductPhoto;
-
-      const duplicateSku = state.products.find(item => item.id !== editId && item.sku.trim().toLowerCase() === sku.toLowerCase());
+      if (!requireOperator()) return;
+      const payload = {
+        id: refs.productId.value || `p-${Date.now()}`,
+        name: refs.productName.value.trim(),
+        category: refs.productCategory.value.trim(),
+        sku: refs.productSku.value.trim(),
+        costPrice: Number(refs.productCost.value || 0),
+        salePrice: Number(refs.productPrice.value || 0),
+        stock: Number(refs.productStock.value || 0),
+        threshold: Number(refs.productThreshold.value || 0),
+        photo: state.tempProductPhoto,
+        note: refs.productNote.value.trim(),
+        createdAt: todayString()
+      };
+      const duplicateSku = state.products.find(item => item.id !== payload.id && item.sku.trim().toLowerCase() === payload.sku.trim().toLowerCase());
       if (duplicateSku) {
-        showToast(`条码/编码"${sku}"已经被"${duplicateSku.name}"占用了，换一个吧`);
+        showToast(`条码/编码"${payload.sku}"已经被"${duplicateSku.name}"占用了，换一个吧`);
         return;
       }
-
-      try {
-        const row = {
-          name, category, sku, cost_price: costPrice, sale_price: salePrice,
-          stock, threshold, photo_url: photo || null, note: note || null
-        };
-        if (editId) {
-          const old = getProductById(editId);
-          const { error } = await sb.from('products').update(row).eq('id', editId);
-          if (error) throw error;
-          await logOperation('编辑商品', name, `进价 ${formatMoney(old.costPrice)} → ${formatMoney(costPrice)}，售价 ${formatMoney(old.salePrice)} → ${formatMoney(salePrice)}，库存 ${old.stock} → ${stock}`);
-        } else {
-          row.created_by = state.profile.id;
-          const { error } = await sb.from('products').insert(row);
-          if (error) throw error;
-          await logOperation('新增商品', name, `进价 ${formatMoney(costPrice)}，售价 ${formatMoney(salePrice)}，库存 ${stock}`);
-        }
-        await fetchAllData();
-        renderAll();
-        resetProductForm();
-        showToast('商品已经保存');
-      } catch (error) {
-        showToast(friendlyDbError(error));
+      const existingIndex = state.products.findIndex(item => item.id === payload.id);
+      if (existingIndex >= 0) {
+        const old = state.products[existingIndex];
+        state.products[existingIndex] = { ...old, ...payload };
+        logOperation('编辑商品', payload.name, `进价 ${formatMoney(old.costPrice)} → ${formatMoney(payload.costPrice)}，售价 ${formatMoney(old.salePrice)} → ${formatMoney(payload.salePrice)}，库存 ${old.stock} → ${payload.stock}`);
+      } else {
+        state.products.push(payload);
+        logOperation('新增商品', payload.name, `进价 ${formatMoney(payload.costPrice)}，售价 ${formatMoney(payload.salePrice)}，库存 ${payload.stock}`);
       }
+      saveData();
+      renderAll();
+      resetProductForm();
+      showToast('商品已经保存');
     });
 
     refs.cancelProductEdit.addEventListener('click', resetProductForm);
     refs.productPhotoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      try {
-        showToast('照片上传中…');
-        state.tempProductPhoto = await uploadPhoto(file);
-        renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
-      } catch (error) {
-        showToast(friendlyDbError(error));
-      }
-      e.target.value = '';
+      state.tempProductPhoto = await compressImage(file);
+      renderPhotoPreview(refs.productPhotoPreview, state.tempProductPhoto ? [state.tempProductPhoto] : [], 'product');
     });
 
-    refs.purchaseForm.addEventListener('submit', async (event) => {
+    refs.purchaseForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (!requireOperator()) return;
       const product = getProductById(refs.purchaseProduct.value);
       if (!product) return;
       const editId = refs.purchaseEditId.value;
@@ -2030,53 +1791,46 @@
       const costPrice = Number(refs.purchaseCost.value || 0);
       const total = Number(refs.purchaseTotal.value || 0);
 
-      const savePurchase = async () => {
-        try {
-          if (editId) {
-            const existing = state.purchases.find(item => item.id === editId);
-            if (!existing) return;
-            const oldTotal = Number(existing.total || 0);
-            const oldQty = Number(existing.qty || 0);
-            const oldProductId = existing.productId;
-            if (oldProductId === product.id) {
-              await adjustStock(product.id, qty - oldQty);
-            } else {
-              await adjustStock(oldProductId, -oldQty);
-              await adjustStock(product.id, qty);
-            }
-            const { error } = await sb.from('purchases').update({
-              date: refs.purchaseDate.value,
-              supplier: refs.purchaseSupplier.value.trim(),
-              product_id: refs.purchaseProduct.value,
-              qty, cost_price: costPrice, total,
-              receipt_photos: state.tempPurchasePhotos.slice(),
-              note: refs.purchaseNote.value.trim() || null
-            }).eq('id', editId);
-            if (error) throw error;
-            await logOperation('编辑进货', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(total)}（数量 ${oldQty} → ${qty}）`);
-            showToast('进货记录已更新，库存已同步');
-          } else {
-            const { error } = await sb.from('purchases').insert({
-              date: refs.purchaseDate.value,
-              supplier: refs.purchaseSupplier.value.trim(),
-              product_id: refs.purchaseProduct.value,
-              qty, cost_price: costPrice, total,
-              receipt_photos: state.tempPurchasePhotos.slice(),
-              note: refs.purchaseNote.value.trim() || null,
-              created_by: state.profile.id
-            });
-            if (error) throw error;
-            await adjustStock(product.id, qty);
-            await sb.from('products').update({ cost_price: costPrice }).eq('id', product.id);
-            await logOperation('新增进货', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
-            showToast('进货已经登记，库存已更新');
-          }
-          await fetchAllData();
-          renderAll();
-          resetPurchaseForm();
-        } catch (error) {
-          showToast(friendlyDbError(error));
+      const savePurchase = () => {
+        if (editId) {
+          const existing = state.purchases.find(item => item.id === editId);
+          if (!existing) return;
+          const oldTotal = Number(existing.total || 0);
+          const oldQty = Number(existing.qty || 0);
+          const oldProduct = getProductById(existing.productId);
+          if (oldProduct) oldProduct.stock = Number(oldProduct.stock || 0) - Number(existing.qty || 0);
+          product.stock = Number(product.stock || 0) + qty;
+          existing.date = refs.purchaseDate.value;
+          existing.supplier = refs.purchaseSupplier.value.trim();
+          existing.productId = refs.purchaseProduct.value;
+          existing.qty = qty;
+          existing.costPrice = costPrice;
+          existing.total = total;
+          existing.receiptPhotos = state.tempPurchasePhotos.slice();
+          existing.note = refs.purchaseNote.value.trim();
+          logOperation('编辑进货', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(total)}（数量 ${oldQty} → ${qty}）`);
+          showToast('进货记录已更新，库存已同步');
+        } else {
+          const payload = {
+            id: `r-${Date.now()}`,
+            date: refs.purchaseDate.value,
+            supplier: refs.purchaseSupplier.value.trim(),
+            productId: refs.purchaseProduct.value,
+            qty,
+            costPrice,
+            total,
+            receiptPhotos: state.tempPurchasePhotos.slice(),
+            note: refs.purchaseNote.value.trim()
+          };
+          state.purchases.push(payload);
+          product.stock = Number(product.stock || 0) + qty;
+          product.costPrice = costPrice;
+          logOperation('新增进货', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
+          showToast('进货已经登记，库存已更新');
         }
+        saveData();
+        renderAll();
+        resetPurchaseForm();
       };
 
       if (editId) {
@@ -2107,111 +1861,94 @@
       e.target.value = '';
     });
 
-    refs.saleForm.addEventListener('submit', async (event) => {
+    refs.saleForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (!requireOperator()) return;
       const product = getProductById(refs.saleProduct.value);
       const qty = Number(refs.saleQty.value || 0);
       if (!product) return;
       const editId = refs.saleEditId.value;
 
-      try {
-        if (editId) {
-          const existing = state.sales.find(item => item.id === editId);
-          if (!existing) return;
-          const oldTotal = Number(existing.total || 0);
-          const oldQty = Number(existing.qty || 0);
-          const oldProduct = getProductById(existing.productId);
-          const availableStock = Number(product.stock || 0) + (oldProduct === product ? Number(existing.qty || 0) : 0);
-          if (qty > availableStock) {
-            showToast('库存不足，先补货再卖吧');
-            return;
-          }
-          if (existing.productId === product.id) {
-            await adjustStock(product.id, oldQty - qty);
-          } else {
-            await adjustStock(existing.productId, oldQty);
-            await adjustStock(product.id, -qty);
-          }
-          const total = Number(refs.saleTotal.value || 0);
-          const { error } = await sb.from('sales').update({
-            date: refs.saleDate.value,
-            product_id: refs.saleProduct.value,
-            qty, sale_price: Number(refs.salePrice.value || 0), total,
-            pay_method: refs.salePayMethod.value,
-            receipt_photo: state.tempSalePhoto || null,
-            note: refs.saleNote.value.trim() || null
-          }).eq('id', editId);
-          if (error) throw error;
-          await logOperation('编辑销售', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(total)}（数量 ${oldQty} → ${qty}）`);
-          showToast('销售记录已更新，库存已同步');
-        } else {
-          if (qty > Number(product.stock || 0)) {
-            showToast('库存不足，先补货再卖吧');
-            return;
-          }
-          const total = Number(refs.saleTotal.value || 0);
-          const { error } = await sb.from('sales').insert({
-            date: refs.saleDate.value,
-            product_id: refs.saleProduct.value,
-            qty, sale_price: Number(refs.salePrice.value || 0), total,
-            pay_method: refs.salePayMethod.value,
-            receipt_photo: state.tempSalePhoto || null,
-            note: refs.saleNote.value.trim() || null,
-            created_by: state.profile.id
-          });
-          if (error) throw error;
-          await adjustStock(product.id, -qty);
-          await logOperation('新增销售', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
-          showToast('销售已经登记，库存已扣减');
+      if (editId) {
+        const existing = state.sales.find(item => item.id === editId);
+        if (!existing) return;
+        const oldTotal = Number(existing.total || 0);
+        const oldQty = Number(existing.qty || 0);
+        const oldProduct = getProductById(existing.productId);
+        const availableStock = Number(product.stock || 0) + (oldProduct === product ? Number(existing.qty || 0) : 0);
+        if (qty > availableStock) {
+          showToast('库存不足，先补货再卖吧');
+          return;
         }
-        await fetchAllData();
-        renderAll();
-        resetSaleForm();
-      } catch (error) {
-        showToast(friendlyDbError(error));
+        if (oldProduct) oldProduct.stock = Number(oldProduct.stock || 0) + Number(existing.qty || 0);
+        product.stock = Number(product.stock || 0) - qty;
+        existing.date = refs.saleDate.value;
+        existing.productId = refs.saleProduct.value;
+        existing.qty = qty;
+        existing.salePrice = Number(refs.salePrice.value || 0);
+        existing.total = Number(refs.saleTotal.value || 0);
+        existing.payMethod = refs.salePayMethod.value;
+        existing.receiptPhoto = state.tempSalePhoto;
+        existing.note = refs.saleNote.value.trim();
+        logOperation('编辑销售', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(existing.total)}（数量 ${oldQty} → ${qty}）`);
+        showToast('销售记录已更新，库存已同步');
+      } else {
+        if (qty > Number(product.stock || 0)) {
+          showToast('库存不足，先补货再卖吧');
+          return;
+        }
+        const payload = {
+          id: `s-${Date.now()}`,
+          date: refs.saleDate.value,
+          productId: refs.saleProduct.value,
+          qty,
+          salePrice: Number(refs.salePrice.value || 0),
+          total: Number(refs.saleTotal.value || 0),
+          payMethod: refs.salePayMethod.value,
+          receiptPhoto: state.tempSalePhoto,
+          note: refs.saleNote.value.trim()
+        };
+        state.sales.push(payload);
+        product.stock = Number(product.stock || 0) - qty;
+        logOperation('新增销售', product.name, `金额 ${formatMoney(payload.total)}（数量 ${qty}）`);
+        showToast('销售已经登记，库存已扣减');
       }
+      saveData();
+      renderAll();
+      resetSaleForm();
     });
 
     refs.salePhotoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      try {
-        showToast('照片上传中…');
-        state.tempSalePhoto = await uploadPhoto(file);
-        renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
-      } catch (error) {
-        showToast(friendlyDbError(error));
-      }
+      state.tempSalePhoto = await compressImage(file);
+      renderPhotoPreview(refs.salePhotoPreview, state.tempSalePhoto ? [state.tempSalePhoto] : [], 'sale');
       e.target.value = '';
     });
 
-    refs.adjustmentForm.addEventListener('submit', async (event) => {
+    refs.adjustmentForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      if (!canManage()) { showToast('你的账号权限不能做盘点调整'); return; }
+      if (!requireOperator()) return;
       const product = getProductById(refs.adjustProduct.value);
       if (!product) return;
       const before = Number(refs.adjustBefore.value || 0);
       const after = Number(refs.adjustAfter.value || 0);
-      const reason = refs.adjustReason.value.trim();
-      try {
-        const { error: adjError } = await sb.from('stock_adjustments').insert({
-          date: refs.adjustDate.value,
-          product_id: refs.adjustProduct.value,
-          before_qty: before, after_qty: after, reason: reason || null,
-          created_by: state.profile.id
-        });
-        if (adjError) throw adjError;
-        const { error: prodError } = await sb.from('products').update({ stock: after }).eq('id', product.id);
-        if (prodError) throw prodError;
-        await logOperation('盘点调整', product.name, `库存 ${before} → ${after}${reason ? '，原因：' + reason : ''}`);
-        await fetchAllData();
-        renderAll();
-        refs.adjustmentForm.reset();
-        refs.adjustDate.value = todayString();
-        showToast('盘点记录已保存');
-      } catch (error) {
-        showToast(friendlyDbError(error));
-      }
+      const payload = {
+        id: `a-${Date.now()}`,
+        date: refs.adjustDate.value,
+        productId: refs.adjustProduct.value,
+        before,
+        after,
+        reason: refs.adjustReason.value.trim()
+      };
+      state.stockAdjustments.push(payload);
+      product.stock = after;
+      logOperation('盘点调整', product.name, `库存 ${before} → ${after}${payload.reason ? '，原因：' + payload.reason : ''}`);
+      saveData();
+      renderAll();
+      refs.adjustmentForm.reset();
+      refs.adjustDate.value = todayString();
+      showToast('盘点记录已保存');
     });
 
     refs.confirmAction.addEventListener('click', () => {
@@ -2297,6 +2034,12 @@
       else if (format === 'pdf') exportLogAsPdf();
       refs.exportFormatSelect.value = '';
     });
+    refs.importDataBtn.addEventListener('click', () => refs.importDataInput.click());
+    refs.importDataInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) importDataFromFile(file);
+      e.target.value = '';
+    });
     refs.clearLogBtn.addEventListener('click', clearOperationLogs);
 
     window.openImageModal = openImageModal;
@@ -2309,7 +2052,11 @@
     window.requestDeleteSale = requestDeleteSale;
     window.requestDeleteAdjustment = requestDeleteAdjustment;
 
-    initSession();
+    loadData();
+    setDefaultDates();
+    initOperatorName();
+    renderAll();
+    switchSection('overview');
   </script>
 </body>
 </html>
