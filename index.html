@@ -459,7 +459,16 @@
                 </div>
                 <div class="form-group">
                   <label>数量</label>
-                  <div style="display:flex; align-items:center; gap:8px;"><input id="purchaseQty" type="number" min="1" required style="flex:1;" /><div class="muted" id="purchaseUnitDisplay"></div></div>
+                  <div style="display:flex; align-items:center; gap:8px; align-items:flex-start;">
+                    <input id="purchaseQty" type="number" min="1" required style="flex:1;" />
+                    <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-start; margin-left:8px;">
+                      <div class="muted" id="purchaseUnitDisplay"></div>
+                      <select id="purchaseUnitType" style="font-size:12px; padding:4px;">
+                        <option value="small">按小单位录入</option>
+                        <option value="big">按大单位录入</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label>进价</label>
@@ -538,7 +547,16 @@
                 </div>
                 <div class="form-group">
                   <label>数量</label>
-                  <div style="display:flex; align-items:center; gap:8px;"><input id="saleQty" type="number" min="1" required style="flex:1;" /><div class="muted" id="saleUnitDisplay"></div></div>
+                  <div style="display:flex; align-items:center; gap:8px; align-items:flex-start;">
+                    <input id="saleQty" type="number" min="1" required style="flex:1;" />
+                    <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-start; margin-left:8px;">
+                      <div class="muted" id="saleUnitDisplay"></div>
+                      <select id="saleUnitType" style="font-size:12px; padding:4px;">
+                        <option value="small">按小单位录入</option>
+                        <option value="big">按大单位录入</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label>售价</label>
@@ -812,6 +830,7 @@
       purchaseSupplier: document.getElementById('purchaseSupplier'),
       purchaseProduct: document.getElementById('purchaseProduct'),
       purchaseQty: document.getElementById('purchaseQty'),
+      purchaseUnitType: document.getElementById('purchaseUnitType'),
       purchaseCost: document.getElementById('purchaseCost'),
       purchaseTotal: document.getElementById('purchaseTotal'),
       purchaseNote: document.getElementById('purchaseNote'),
@@ -829,6 +848,7 @@
       saleDate: document.getElementById('saleDate'),
       saleProduct: document.getElementById('saleProduct'),
       saleQty: document.getElementById('saleQty'),
+      saleUnitType: document.getElementById('saleUnitType'),
       salePrice: document.getElementById('salePrice'),
       saleTotal: document.getElementById('saleTotal'),
       salePayMethod: document.getElementById('salePayMethod'),
@@ -954,6 +974,22 @@
         return product.smallUnit ? `${product.smallUnit}（1 ${product.bigUnit} = ${product.unitRatio} ${product.smallUnit}）` : product.bigUnit || '';
       }
       return product.unit || product.smallUnit || product.bigUnit || '';
+    }
+
+    function formatQtyWithUnits(qty, product) {
+      const n = Number(qty || 0);
+      if (!product) return String(n);
+      const ratio = Number(product.unitRatio || 1);
+      const bigUnit = product.bigUnit || '';
+      const smallUnit = product.smallUnit || product.unit || '';
+      if (!bigUnit || !smallUnit || !ratio || ratio <= 1) return `${n} ${smallUnit}`.trim();
+      const bigCount = Math.floor(n / ratio);
+      const smallCount = n % ratio;
+      let parts = [];
+      if (bigCount) parts.push(`${bigCount}${bigUnit}`);
+      if (smallCount) parts.push(`${smallCount}${smallUnit}`);
+      if (!parts.length) return `0${smallUnit ? ' ' + smallUnit : ''}`.trim();
+      return parts.join(' + ');
     }
 
     function formatMoney(num) {
@@ -1454,7 +1490,7 @@
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
             </div>
-            <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 进价 ${formatMoney(item.costPrice || 0)}</div>
+            <div class="muted" style="margin-top:6px;">数量 ${formatQtyWithUnits(item.normalizedQty ?? item.qty, product)} · 进价 ${formatMoney(item.costPrice || 0)}</div>
             ${item.receiptPhotos && item.receiptPhotos.length ? `<div class="photo-list">${item.receiptPhotos.map(photo => `<img class="thumb" src="${photo}" alt="凭证" onclick="window.openImageModal('${photo}')" />`).join('')}</div>` : ''}
             <div class="btn-row" style="margin-top:8px;">
               <button class="btn-link btn-secondary" onclick="editPurchase('${item.id}')">编辑</button>
@@ -1497,7 +1533,7 @@
               </div>
               <span class="tag">${formatMoney(item.total || 0)}</span>
             </div>
-            <div class="muted" style="margin-top:6px;">数量 ${item.qty} · 售价 ${formatMoney(item.salePrice || 0)}</div>
+            <div class="muted" style="margin-top:6px;">数量 ${formatQtyWithUnits(item.normalizedQty ?? item.qty, product)} · 售价 ${formatMoney(item.salePrice || 0)}</div>
             ${item.receiptPhoto ? `<div class="photo-list"><img class="thumb" src="${item.receiptPhoto}" alt="销售凭证" onclick="window.openImageModal('${item.receiptPhoto}')" /></div>` : ''}
             <div class="btn-row" style="margin-top:8px;">
               <button class="btn-link btn-secondary" onclick="editSale('${item.id}')">编辑</button>
@@ -1511,8 +1547,8 @@
       refs.inventoryTable.innerHTML = state.products.length ? state.products.map(item => `
         <tr>
           <td><strong>${escapeHtml(displayProductName(item))}${item.unit ? ' · ' + escapeHtml(item.unit) : ''}</strong><div class="muted">${escapeHtml(item.sku)}</div></td>
-          <td>${item.stock}</td>
-          <td>${item.threshold}</td>
+          <td>${formatQtyWithUnits(item.stock, item)}</td>
+          <td>${formatQtyWithUnits(item.threshold, item)}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
           <td><button class="btn-link btn-secondary" onclick="prepareAdjustment('${item.id}')">盘点</button></td>
         </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没有商品</strong>先新建一件货，台账才有内容。</div></td></tr>';
@@ -1885,13 +1921,25 @@
           if (!existing) return;
           const oldTotal = Number(existing.total || 0);
           const oldQty = Number(existing.qty || 0);
+          const oldEntryUnit = existing.entryUnit || 'small';
           const oldProduct = getProductById(existing.productId);
-          if (oldProduct) oldProduct.stock = Number(oldProduct.stock || 0) - Number(existing.qty || 0);
-          product.stock = Number(product.stock || 0) + qty;
+          // revert old qty (convert to small unit if it was big)
+          if (oldProduct) {
+            const oldRatio = Number(oldProduct.unitRatio || 1) || 1;
+            const oldNormalized = oldEntryUnit === 'big' ? Number(existing.qty || 0) * oldRatio : Number(existing.qty || 0);
+            oldProduct.stock = Number(oldProduct.stock || 0) - oldNormalized;
+          }
+          // apply new qty (convert based on current product's unit type)
+          const entryUnit = refs.purchaseUnitType.value || 'small';
+          const ratio = Number(product.unitRatio || 1) || 1;
+          const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
+          product.stock = Number(product.stock || 0) + normalizedQty;
           existing.date = refs.purchaseDate.value;
           existing.supplier = refs.purchaseSupplier.value.trim();
           existing.productId = refs.purchaseProduct.value;
           existing.qty = qty;
+          existing.entryUnit = refs.purchaseUnitType.value || 'small';
+          existing.normalizedQty = normalizedQty;
           existing.costPrice = costPrice;
           existing.total = total;
           existing.receiptPhotos = state.tempPurchasePhotos.slice();
@@ -1905,14 +1953,16 @@
             supplier: refs.purchaseSupplier.value.trim(),
             productId: refs.purchaseProduct.value,
             qty,
+            entryUnit: refs.purchaseUnitType.value || 'small',
             unit: (product && (product.unit || product.smallUnit || '')) || '',
+            normalizedQty: (refs.purchaseUnitType.value === 'big' ? qty * (Number(product.unitRatio || 1) || 1) : qty),
             costPrice,
             total,
             receiptPhotos: state.tempPurchasePhotos.slice(),
             note: refs.purchaseNote.value.trim()
           };
           state.purchases.push(payload);
-          product.stock = Number(product.stock || 0) + qty;
+          product.stock = Number(product.stock || 0) + Number(payload.normalizedQty || 0);
           product.costPrice = costPrice;
           logOperation('新增进货', product.name, `金额 ${formatMoney(total)}（数量 ${qty}）`);
           showToast('进货已经登记，库存已更新');
@@ -1969,11 +2019,21 @@
           showToast('库存不足，先补货再卖吧');
           return;
         }
-        if (oldProduct) oldProduct.stock = Number(oldProduct.stock || 0) + Number(existing.qty || 0);
-        product.stock = Number(product.stock || 0) - qty;
+        const oldEntryUnit = existing.entryUnit || 'small';
+        if (oldProduct) {
+          const oldRatio = Number(oldProduct.unitRatio || 1) || 1;
+          const oldNormalized = oldEntryUnit === 'big' ? Number(existing.qty || 0) * oldRatio : Number(existing.qty || 0);
+          oldProduct.stock = Number(oldProduct.stock || 0) + oldNormalized;
+        }
+        const entryUnit = refs.saleUnitType.value || 'small';
+        const ratio = Number(product.unitRatio || 1) || 1;
+        const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
+        product.stock = Number(product.stock || 0) - normalizedQty;
         existing.date = refs.saleDate.value;
         existing.productId = refs.saleProduct.value;
         existing.qty = qty;
+        existing.entryUnit = refs.saleUnitType.value || 'small';
+        existing.normalizedQty = normalizedQty;
         existing.salePrice = Number(refs.salePrice.value || 0);
         existing.total = Number(refs.saleTotal.value || 0);
         existing.payMethod = refs.salePayMethod.value;
@@ -1982,7 +2042,10 @@
         logOperation('编辑销售', product.name, `金额 ${formatMoney(oldTotal)} → ${formatMoney(existing.total)}（数量 ${oldQty} → ${qty}）`);
         showToast('销售记录已更新，库存已同步');
       } else {
-        if (qty > Number(product.stock || 0)) {
+        const entryUnit = refs.saleUnitType.value || 'small';
+        const ratio = Number(product.unitRatio || 1) || 1;
+        const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
+        if (normalizedQty > Number(product.stock || 0)) {
           showToast('库存不足，先补货再卖吧');
           return;
         }
@@ -1991,6 +2054,8 @@
           date: refs.saleDate.value,
           productId: refs.saleProduct.value,
           qty,
+          entryUnit: entryUnit,
+          normalizedQty: normalizedQty,
           unit: (product && (product.unit || product.smallUnit || '')) || '',
           salePrice: Number(refs.salePrice.value || 0),
           total: Number(refs.saleTotal.value || 0),
@@ -1999,7 +2064,7 @@
           note: refs.saleNote.value.trim()
         };
         state.sales.push(payload);
-        product.stock = Number(product.stock || 0) - qty;
+        product.stock = Number(product.stock || 0) - normalizedQty;
         logOperation('新增销售', product.name, `金额 ${formatMoney(payload.total)}（数量 ${qty}）`);
         showToast('销售已经登记，库存已扣减');
       }
