@@ -2039,9 +2039,6 @@
           const oldNormalized = oldEntryUnit === 'big' ? Number(existing.qty || 0) * oldRatio : Number(existing.qty || 0);
           oldProduct.stock = Number(oldProduct.stock || 0) + oldNormalized;
         }
-        const entryUnit = refs.saleUnitType.value || 'small';
-        const ratio = Number(product.unitRatio || 1) || 1;
-        const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
         product.stock = Number(product.stock || 0) - normalizedQty;
         existing.date = refs.saleDate.value;
         existing.productId = refs.saleProduct.value;
