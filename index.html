@@ -345,6 +345,7 @@
                 <thead>
                   <tr>
                     <th>商品</th>
+                    <th>规格/单位</th>
                     <th>分类</th>
                     <th>库存</th>
                     <th>状态</th>
@@ -1447,14 +1448,18 @@
               ${item.photo ? `<img class="thumb" src="${item.photo}" alt="${escapeHtml(displayProductName(item))}" onclick="window.openImageModal('${item.photo}')" />` : '<div style="width:60px;height:60px;border-radius:12px;background:#f7ead7;display:flex;align-items:center;justify-content:center;color:#b96c2f;">照</div>'}
             </div>
           </td>
+          <td>
+            <div class="muted">${escapeHtml(item.spec || '—')}</div>
+            <div>${escapeHtml(item.bigUnit && item.smallUnit && Number(item.unitRatio || 1) > 1 ? `${item.bigUnit}/${item.smallUnit}=${item.unitRatio}` : (item.unit || item.smallUnit || item.bigUnit || '—'))}</div>
+          </td>
           <td>${escapeHtml(item.category)}</td>
-          <td>${item.stock}</td>
+          <td>${formatQtyWithUnits(item.stock, item)}</td>
           <td>${Number(item.stock || 0) <= Number(item.threshold || 0) ? '<span class="warning-row">要补货</span>' : '<span class="ok">正常</span>'}</td>
           <td class="actions">
             <button class="btn-link btn-secondary" onclick="editProduct('${item.id}')">编辑</button>
             <button class="btn-link btn-danger" onclick="requestDeleteProduct('${item.id}')">删</button>
           </td>
-        </tr>`).join('') : '<tr><td colspan="5"><div class="empty-state"><strong>还没找到合适的货</strong>换个关键词或分类再试一次吧。</div></td></tr>';
+        </tr>`).join('') : '<tr><td colspan="6"><div class="empty-state"><strong>还没找到合适的货</strong>换个关键词或分类再试一次吧。</div></td></tr>';
     }
 
     function filterPurchases() {
