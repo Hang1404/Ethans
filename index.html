@@ -1976,9 +1976,16 @@
         const existing = state.purchases.find(item => item.id === editId);
         if (existing) {
           const oldProduct = getProductById(existing.productId);
+          const oldRatio = Number((oldProduct || product).unitRatio || 1) || 1;
+          const oldNormalized = existing.normalizedQty != null
+            ? Number(existing.normalizedQty || 0)
+            : ((existing.entryUnit || 'small') === 'big' ? Number(existing.qty || 0) * oldRatio : Number(existing.qty || 0));
+          const entryUnit = refs.purchaseUnitType.value || 'small';
+          const ratio = Number(product.unitRatio || 1) || 1;
+          const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
           const resultStock = oldProduct === product
-            ? Number(product.stock || 0) - Number(existing.qty || 0) + qty
-            : Number(product.stock || 0) + qty;
+            ? Number(product.stock || 0) - oldNormalized + normalizedQty
+            : Number(product.stock || 0) + normalizedQty;
           if (resultStock < 0) {
             openConfirm({
               title: '库存将变为负数',
@@ -2014,8 +2021,15 @@
         const oldTotal = Number(existing.total || 0);
         const oldQty = Number(existing.qty || 0);
         const oldProduct = getProductById(existing.productId);
-        const availableStock = Number(product.stock || 0) + (oldProduct === product ? Number(existing.qty || 0) : 0);
-        if (qty > availableStock) {
+        const entryUnit = refs.saleUnitType.value || 'small';
+        const ratio = Number(product.unitRatio || 1) || 1;
+        const normalizedQty = entryUnit === 'big' ? qty * ratio : qty;
+        const oldRatio = Number((oldProduct || product).unitRatio || 1) || 1;
+        const oldNormalized = existing.normalizedQty != null
+          ? Number(existing.normalizedQty || 0)
+          : ((existing.entryUnit || 'small') === 'big' ? Number(existing.qty || 0) * oldRatio : Number(existing.qty || 0));
+        const availableStock = Number(product.stock || 0) + (oldProduct === product ? oldNormalized : 0);
+        if (normalizedQty > availableStock) {
           showToast('库存不足，先补货再卖吧');
           return;
         }
