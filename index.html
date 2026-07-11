@@ -990,7 +990,8 @@
       if (bigCount) parts.push(`${bigCount}${bigUnit}`);
       if (smallCount) parts.push(`${smallCount}${smallUnit}`);
       if (!parts.length) return `0${smallUnit ? ' ' + smallUnit : ''}`.trim();
-      return parts.join(' + ');
+      if (bigCount > 0) return `${parts.join(' + ')}（共${n}${smallUnit}）`;
+      return `${parts.join(' + ')}`;
     }
 
     function formatMoney(num) {
